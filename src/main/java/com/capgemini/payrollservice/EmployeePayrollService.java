@@ -2,6 +2,7 @@ package com.capgemini.payrollservice;
 
 import java.util.*;
 
+import com.capgemini.fileioservice.EmployeePayrollFileIOService;
 import com.capgemini.payrolldata.EmployeePayrollData;
 
 public class EmployeePayrollService {
@@ -19,7 +20,7 @@ public class EmployeePayrollService {
 		this.employeePayrollList = employeePayrollList;
 	}
 
-	private void readData(Scanner sc) {
+	public void readData(Scanner sc) {
 		System.out.println("Enter Employee ID : ");
 		int id = sc.nextInt();
 		System.out.println("Enter Employee Name : ");
@@ -29,9 +30,15 @@ public class EmployeePayrollService {
 		employeePayrollList.add(new EmployeePayrollData(id, name, salary));
 	}
 
-	private void writeData() {
+	public void writeData(IOService iOService) {
+		if(iOService.equals(IOService.CONSOLE_IO)) {
 		System.out.println("Writing Employee Payroll Details To The Console : ");
 		System.out.println(employeePayrollList);
+		}
+		else if(iOService.equals(IOService.FILE_IO))
+		{
+			new EmployeePayrollFileIOService().writeDataInFile(employeePayrollList);
+		}
 	}
 
 	public static void main(String[] args) {
@@ -39,7 +46,19 @@ public class EmployeePayrollService {
 		EmployeePayrollService EPS = new EmployeePayrollService(empdetailslist);
 		Scanner sc = new Scanner(System.in);
 		EPS.readData(sc);
-		EPS.writeData();
+		
+	}
+
+	public long countEntries(IOService fileIo) {
+		if(fileIo.equals(IOService.CONSOLE_IO))
+		{
+			return employeePayrollList.size();
+		}
+		else if(fileIo.equals(IOService.FILE_IO))
+		{
+			return new EmployeePayrollFileIOService().countEntriesFromFile();
+		}
+		else return 0;
 	}
 
 }

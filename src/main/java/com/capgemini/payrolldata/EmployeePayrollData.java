@@ -38,7 +38,7 @@ public class EmployeePayrollData {
 
 	@Override
 	public String toString() {
-		return "EmployeePayrollData [id=" + id + ", name=" + name + ", salary=" + salary + "]";
+		return "EmployeePayrollData [id=" + id + ", name=" + name + ", salary=" + salary + "] \n";
 	}
 
 }
