@@ -40,4 +40,21 @@ public class EmployeePayrollFileIOService {
 		return lines;
 
 	}
+
+	public void printDataFromFile() {
+		System.out.println("Printing Data From The File :");
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(PAYROLL_FILE_NAME));
+			while (true) {
+				String str = reader.readLine();
+				if (str != null)
+					System.out.println(str);
+				else
+					break;
+			}
+			reader.close();
+		} catch (IOException e) {
+		}
+
+	}
 }

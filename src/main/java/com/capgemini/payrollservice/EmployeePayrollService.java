@@ -31,12 +31,10 @@ public class EmployeePayrollService {
 	}
 
 	public void writeData(IOService iOService) {
-		if(iOService.equals(IOService.CONSOLE_IO)) {
-		System.out.println("Writing Employee Payroll Details To The Console : ");
-		System.out.println(employeePayrollList);
-		}
-		else if(iOService.equals(IOService.FILE_IO))
-		{
+		if (iOService.equals(IOService.CONSOLE_IO)) {
+			System.out.println("Writing Employee Payroll Details To The Console : ");
+			System.out.println(employeePayrollList);
+		} else if (iOService.equals(IOService.FILE_IO)) {
 			new EmployeePayrollFileIOService().writeDataInFile(employeePayrollList);
 		}
 	}
@@ -46,19 +44,26 @@ public class EmployeePayrollService {
 		EmployeePayrollService EPS = new EmployeePayrollService(empdetailslist);
 		Scanner sc = new Scanner(System.in);
 		EPS.readData(sc);
-		
+
 	}
 
 	public long countEntries(IOService fileIo) {
-		if(fileIo.equals(IOService.CONSOLE_IO))
-		{
+		if (fileIo.equals(IOService.CONSOLE_IO)) {
 			return employeePayrollList.size();
-		}
-		else if(fileIo.equals(IOService.FILE_IO))
-		{
+		} else if (fileIo.equals(IOService.FILE_IO)) {
 			return new EmployeePayrollFileIOService().countEntriesFromFile();
+		} else
+			return 0;
+	}
+
+	public void printData(IOService fileIo) {
+		if (fileIo.equals(IOService.CONSOLE_IO)) {
+			System.out.println("Printing Data From Console Input");
+			System.out.println(employeePayrollList);
+		} else if (fileIo.equals(IOService.FILE_IO)) {
+			new EmployeePayrollFileIOService().printDataFromFile();
 		}
-		else return 0;
+
 	}
 
 }

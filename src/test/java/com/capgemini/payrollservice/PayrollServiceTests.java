@@ -15,14 +15,24 @@ public class PayrollServiceTests {
 
 	@Test
 	public void given3EmployeesWhenWrittenToFilesShouldMatchTheGivenEntries() {
-	EmployeePayrollData[] arrEmp= {new EmployeePayrollData(1, "Yudha", 100.67),
-			new EmployeePayrollData(2,"Raman",456.78),
-			new EmployeePayrollData(3,"Tapan",78.35)};
-	EmployeePayrollService EPS=new EmployeePayrollService(Arrays.asList(arrEmp));
-	EPS.writeData(IOService.FILE_IO);
-	long count=EPS.countEntries(IOService.FILE_IO);
-	System.out.println(count);
-	Assert.assertEquals(3,count);
+		EmployeePayrollData[] arrEmp = { new EmployeePayrollData(1, "Yudha", 100.67),
+				new EmployeePayrollData(2, "Raman", 456.78), new EmployeePayrollData(3, "Tapan", 78.35) };
+		EmployeePayrollService EPS = new EmployeePayrollService(Arrays.asList(arrEmp));
+		EPS.writeData(IOService.FILE_IO);
+		long count = EPS.countEntries(IOService.FILE_IO);
+		Assert.assertEquals(3, count);
+	}
+
+	@Test
+	public void given3Employees_WhenWrittenToFiles_ShouldPrintGivenEntries() {
+		EmployeePayrollData[] arrEmp = { new EmployeePayrollData(1, "Yudha", 100.67),
+				new EmployeePayrollData(2, "Raman", 456.78), new EmployeePayrollData(3, "Tapan", 78.35) };
+		EmployeePayrollService EPS = new EmployeePayrollService(Arrays.asList(arrEmp));
+		EPS.writeData(IOService.FILE_IO);
+		long count = EPS.countEntries(IOService.FILE_IO);
+		EPS.printData(IOService.FILE_IO);
+		EPS.printData(IOService.CONSOLE_IO);
+		Assert.assertEquals(3, count);
 	}
 
 }
