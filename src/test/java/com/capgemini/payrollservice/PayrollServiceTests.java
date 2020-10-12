@@ -1,9 +1,8 @@
 package com.capgemini.payrollservice;
 
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,6 +32,17 @@ public class PayrollServiceTests {
 		EPS.printData(IOService.FILE_IO);
 		EPS.printData(IOService.CONSOLE_IO);
 		Assert.assertEquals(3, count);
+	}
+
+	@Test
+	public void given3Employees_WhenWrittenToFiles_ShouldReadFromThatFile() {
+		List<EmployeePayrollData> emp = new LinkedList<>();
+		EmployeePayrollService EPS = new EmployeePayrollService(emp);
+		EPS.readData(IOService.FILE_IO);
+		EPS.printData(IOService.CONSOLE_IO);
+		long a = EPS.countEntries(IOService.CONSOLE_IO);
+		Assert.assertEquals(3, a);
+
 	}
 
 }

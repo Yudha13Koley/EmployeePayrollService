@@ -1,7 +1,6 @@
 package com.capgemini.fileioservice;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
@@ -56,5 +55,27 @@ public class EmployeePayrollFileIOService {
 		} catch (IOException e) {
 		}
 
+	}
+
+	public List<EmployeePayrollData> readDataFromFile(List<EmployeePayrollData> employeePayrollList) {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(PAYROLL_FILE_NAME));
+			while (true) {
+				String str = reader.readLine();
+				if (str != null) {
+					int a = str.indexOf(",");
+					int b = str.indexOf(",", a + 1);
+					int id = Integer.parseInt(str.substring(str.indexOf("id=") + 3, a));
+					String name = str.substring(str.indexOf("name=") + 5, b);
+					double salary = Double.parseDouble(str.substring(str.indexOf("salary=") + 7, str.indexOf("]")));
+					employeePayrollList.add(new EmployeePayrollData(id, name, salary));
+				} else
+					break;
+			}
+			reader.close();
+		} catch (IOException e) {
+		}
+
+		return employeePayrollList;
 	}
 }

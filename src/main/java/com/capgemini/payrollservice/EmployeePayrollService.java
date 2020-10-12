@@ -10,7 +10,7 @@ public class EmployeePayrollService {
 		CONSOLE_IO, FILE_IO, DB_IO, REST_IO
 	}
 
-	private List<EmployeePayrollData> employeePayrollList;
+	public List<EmployeePayrollData> employeePayrollList;
 
 	public EmployeePayrollService() {
 		// TODO Auto-generated constructor stub
@@ -20,14 +20,20 @@ public class EmployeePayrollService {
 		this.employeePayrollList = employeePayrollList;
 	}
 
-	public void readData(Scanner sc) {
-		System.out.println("Enter Employee ID : ");
-		int id = sc.nextInt();
-		System.out.println("Enter Employee Name : ");
-		String name = sc.next();
-		System.out.println("Enter Employee Salary : ");
-		double salary = sc.nextDouble();
-		employeePayrollList.add(new EmployeePayrollData(id, name, salary));
+	public void readData(IOService fileIo) {
+		if (fileIo.equals(IOService.CONSOLE_IO)) {
+			Scanner sc = new Scanner(System.in);
+			System.out.println("Enter Employee ID : ");
+			int id = sc.nextInt();
+			System.out.println("Enter Employee Name : ");
+			String name = sc.next();
+			System.out.println("Enter Employee Salary : ");
+			double salary = sc.nextDouble();
+			sc.close();
+			employeePayrollList.add(new EmployeePayrollData(id, name, salary));
+		} else if (fileIo.equals(IOService.FILE_IO)) {
+			this.employeePayrollList = new EmployeePayrollFileIOService().readDataFromFile(employeePayrollList);
+		}
 	}
 
 	public void writeData(IOService iOService) {
@@ -40,10 +46,6 @@ public class EmployeePayrollService {
 	}
 
 	public static void main(String[] args) {
-		ArrayList<EmployeePayrollData> empdetailslist = new ArrayList<>();
-		EmployeePayrollService EPS = new EmployeePayrollService(empdetailslist);
-		Scanner sc = new Scanner(System.in);
-		EPS.readData(sc);
 
 	}
 
