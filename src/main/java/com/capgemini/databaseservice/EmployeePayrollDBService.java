@@ -41,15 +41,7 @@ public class EmployeePayrollDBService {
 		return conn;
 	}
 
-	public static EmployeePayrollDBService getDBServiceInstance() {
-		if (empployeePayrollDBService == null)
-			return new EmployeePayrollDBService();
-		else
-			return empployeePayrollDBService;
-	}
-
-	public List<EmployeePayrollData> readData() throws DataBaseSQLException {
-		String sql = "SELECT*FROM employee_payroll ;";
+	private List<EmployeePayrollData> readDataForASQL(String sql) throws DataBaseSQLException {
 		List<EmployeePayrollData> emplist = new ArrayList<>();
 		ResultSet result = null;
 		try {
@@ -60,7 +52,6 @@ public class EmployeePayrollDBService {
 			throw new DataBaseSQLException(e.getMessage());
 		}
 		return emplist;
-
 	}
 
 	private List<EmployeePayrollData> getListOfEntries(ResultSet result, List<EmployeePayrollData> emplist)
@@ -75,6 +66,18 @@ public class EmployeePayrollDBService {
 		return emplist;
 	}
 
+	public static EmployeePayrollDBService getDBServiceInstance() {
+		if (empployeePayrollDBService == null)
+			return new EmployeePayrollDBService();
+		else
+			return empployeePayrollDBService;
+	}
+
+	public List<EmployeePayrollData> readData() throws DataBaseSQLException {
+		String sql = "SELECT*FROM employee_payroll ;";
+		return readDataForASQL(sql);
+	}
+
 	public int setSalaryOfEmployee(String name, double salary) throws DataBaseSQLException {
 		String sql = String.format("UPDATE employee_payroll SET salary=%.2f WHERE name='%s' ;", salary, name);
 		try {
@@ -84,6 +87,11 @@ public class EmployeePayrollDBService {
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
 		}
+	}
+
+	public List<EmployeePayrollData> readDataForJoiningDates() throws DataBaseSQLException {
+		String sql = "SELECT*FROM employee_payroll WHERE start BETWEEN CAST('2020-01-01' AS DATE) AND DATE(NOW()) ;";
+		return readDataForASQL(sql);
 	}
 
 }

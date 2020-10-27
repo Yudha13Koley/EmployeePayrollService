@@ -8,13 +8,13 @@ import com.capgemini.fileioservice.EmployeePayrollFileIOService;
 import com.capgemini.payrolldata.EmployeePayrollData;
 
 public class EmployeePayrollService {
+
 	private EmployeePayrollDBService employeePayrollDBService;
+	public List<EmployeePayrollData> employeePayrollList;
 
 	public enum IOService {
 		CONSOLE_IO, FILE_IO, DB_IO, REST_IO
 	}
-
-	public List<EmployeePayrollData> employeePayrollList;
 
 	public EmployeePayrollService() {
 		this.employeePayrollDBService = EmployeePayrollDBService.getDBServiceInstance();
@@ -23,6 +23,10 @@ public class EmployeePayrollService {
 	public EmployeePayrollService(List<EmployeePayrollData> employeePayrollList) {
 		this();
 		this.employeePayrollList = employeePayrollList;
+	}
+
+	private EmployeePayrollData getEmployee(List<EmployeePayrollData> list, String name) {
+		return list.stream().filter(n -> n.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
 	}
 
 	public void readData(IOService fileIo) throws DataBaseSQLException {
@@ -89,10 +93,6 @@ public class EmployeePayrollService {
 
 	}
 
-	private EmployeePayrollData getEmployee(List<EmployeePayrollData> list, String name) {
-		return list.stream().filter(n -> n.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-	}
-
 	public boolean isEmployeeSyncWithDatabase(String name) {
 		List<EmployeePayrollData> empList = new ArrayList<>();
 		try {
@@ -102,6 +102,10 @@ public class EmployeePayrollService {
 			e.printStackTrace();
 		}
 		return getEmployee(empList, name).equals(getEmployee(employeePayrollList, name));
+	}
+
+	public void readDataForACondition() throws DataBaseSQLException {
+		this.employeePayrollList = employeePayrollDBService.readDataForJoiningDates();
 	}
 
 }

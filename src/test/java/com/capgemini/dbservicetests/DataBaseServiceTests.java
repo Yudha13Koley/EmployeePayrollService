@@ -42,4 +42,18 @@ public class DataBaseServiceTests {
 
 	}
 
+	@Test
+	public void givenEmployeePayrollDataBase_whenRetrievedDataForACondition_shouldReturnCount() {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		try {
+			employeePayrollService.readDataForACondition();
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+			fail();
+		}
+		List<EmployeePayrollData> empList = employeePayrollService.employeePayrollList;
+		System.out.println(empList);
+		Assert.assertEquals(1, empList.size());
+	}
+
 }
