@@ -15,6 +15,10 @@ import com.capgemini.payrolldata.EmployeePayrollData;
 public class EmployeePayrollDBService {
 
 	private PreparedStatement preparedStatement;
+	private static EmployeePayrollDBService empployeePayrollDBService;
+
+	private EmployeePayrollDBService() {
+	}
 
 	private PreparedStatement getPrepareStatementInstance(String sql) throws DataBaseSQLException {
 		try {
@@ -35,6 +39,13 @@ public class EmployeePayrollDBService {
 		conn = DriverManager.getConnection(jdbcUrl, userName, passWord);
 		System.out.println("Connection is successful : " + conn);
 		return conn;
+	}
+
+	public static EmployeePayrollDBService getDBServiceInstance() {
+		if (empployeePayrollDBService == null)
+			return new EmployeePayrollDBService();
+		else
+			return empployeePayrollDBService;
 	}
 
 	public List<EmployeePayrollData> readData() throws DataBaseSQLException {

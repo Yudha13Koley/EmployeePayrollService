@@ -8,6 +8,8 @@ import com.capgemini.fileioservice.EmployeePayrollFileIOService;
 import com.capgemini.payrolldata.EmployeePayrollData;
 
 public class EmployeePayrollService {
+	private EmployeePayrollDBService employeePayrollDBService;
+
 	public enum IOService {
 		CONSOLE_IO, FILE_IO, DB_IO, REST_IO
 	}
@@ -15,10 +17,11 @@ public class EmployeePayrollService {
 	public List<EmployeePayrollData> employeePayrollList;
 
 	public EmployeePayrollService() {
-		// TODO Auto-generated constructor stub
+		this.employeePayrollDBService = EmployeePayrollDBService.getDBServiceInstance();
 	}
 
 	public EmployeePayrollService(List<EmployeePayrollData> employeePayrollList) {
+		this();
 		this.employeePayrollList = employeePayrollList;
 	}
 
@@ -36,7 +39,7 @@ public class EmployeePayrollService {
 		} else if (fileIo.equals(IOService.FILE_IO)) {
 			this.employeePayrollList = new EmployeePayrollFileIOService().readDataFromFile(employeePayrollList);
 		} else if (fileIo.equals(IOService.DB_IO)) {
-			this.employeePayrollList = new EmployeePayrollDBService().readData();
+			this.employeePayrollList = employeePayrollDBService.readData();
 		}
 	}
 
@@ -74,7 +77,7 @@ public class EmployeePayrollService {
 
 	public void updateSalaryOfAnEmployeeInDB(String name, double salary) {
 		try {
-			int result = new EmployeePayrollDBService().setSalaryOfEmployee(name, salary);
+			int result = employeePayrollDBService.setSalaryOfEmployee(name, salary);
 			System.out.println("No of rows updated : " + result);
 		} catch (DataBaseSQLException e) {
 			e.printStackTrace();
@@ -93,7 +96,7 @@ public class EmployeePayrollService {
 	public boolean isEmployeeSyncWithDatabase(String name) {
 		List<EmployeePayrollData> empList = new ArrayList<>();
 		try {
-			empList = new EmployeePayrollDBService().readData();
+			empList = employeePayrollDBService.readData();
 		} catch (DataBaseSQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
