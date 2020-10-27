@@ -2,9 +2,9 @@ package com.capgemini.databaseservice;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,25 +14,16 @@ import com.capgemini.payrolldata.EmployeePayrollData;
 
 public class EmployeePayrollDBService {
 
-	public List<EmployeePayrollData> readData() throws DataBaseSQLException {
-		String sql = "SELECT*FROM employee_payroll ;";
-		List<EmployeePayrollData> emplist = new ArrayList<>();
-		try (Connection connection = this.getConnection()) {
-			Statement statement = connection.createStatement();
-			ResultSet result = statement.executeQuery(sql);
-			while (result.next()) {
-				int id = result.getInt("id");
-				String name = result.getString("name");
-				double salary = result.getDouble("salary");
-				LocalDate startdate = result.getDate("start").toLocalDate();
-				emplist.add(new EmployeePayrollData(id, name, salary, startdate));
-			}
+	private PreparedStatement preparedStatement;
 
+	private PreparedStatement getPrepareStatementInstance(String sql) throws DataBaseSQLException {
+		try {
+			Connection connection = this.getConnection();
+			preparedStatement = connection.prepareStatement(sql);
+			return preparedStatement;
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
 		}
-		return emplist;
-
 	}
 
 	private Connection getConnection() throws SQLException {
@@ -46,11 +37,33 @@ public class EmployeePayrollDBService {
 		return conn;
 	}
 
+	public List<EmployeePayrollData> readData() throws DataBaseSQLException {
+		String sql = "SELECT*FROM employee_payroll ;";
+		List<EmployeePayrollData> emplist = new ArrayList<>();
+		ResultSet result = null;
+		try {
+			result = getPrepareStatementInstance(sql).executeQuery();
+			while (result.next()) {
+				int id = result.getInt("id");
+				String name = result.getString("name");
+				double salary = result.getDouble("salary");
+				LocalDate startdate = result.getDate("start").toLocalDate();
+				emplist.add(new EmployeePayrollData(id, name, salary, startdate));
+			}
+			preparedStatement.close();
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
+		return emplist;
+
+	}
+
 	public int setSalaryOfEmployee(String name, double salary) throws DataBaseSQLException {
 		String sql = String.format("UPDATE employee_payroll SET salary=%.2f WHERE name='%s' ;", salary, name);
-		try (Connection connection = this.getConnection()) {
-			Statement statement = connection.createStatement();
-			return statement.executeUpdate(sql);
+		try {
+			int n = getPrepareStatementInstance(sql).executeUpdate();
+			preparedStatement.close();
+			return n;
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
 		}
