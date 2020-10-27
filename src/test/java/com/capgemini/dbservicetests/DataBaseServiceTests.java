@@ -56,4 +56,20 @@ public class DataBaseServiceTests {
 		Assert.assertEquals(1, empList.size());
 	}
 
+	@Test
+	public void givenEmployeePayrollDataBase_whenDoneCURDOperationsAndUpdated_shouldReturnTrue() {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		boolean result = false;
+		try {
+			result = employeePayrollService.updateGenderColumn();
+			employeePayrollService.readData(IOService.DB_IO);
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+			fail();
+		}
+		List<EmployeePayrollData> empList = employeePayrollService.employeePayrollList;
+		System.out.println(empList);
+		Assert.assertEquals(true, result);
+	}
+
 }

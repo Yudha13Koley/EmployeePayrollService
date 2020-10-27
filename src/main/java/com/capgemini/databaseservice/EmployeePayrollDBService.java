@@ -61,7 +61,8 @@ public class EmployeePayrollDBService {
 			String name = result.getString("name");
 			double salary = result.getDouble("salary");
 			LocalDate startdate = result.getDate("start").toLocalDate();
-			emplist.add(new EmployeePayrollData(id, name, salary, startdate));
+			char gender = result.getString("gender").charAt(0);
+			emplist.add(new EmployeePayrollData(id, name, salary, startdate, gender));
 		}
 		return emplist;
 	}
@@ -92,6 +93,29 @@ public class EmployeePayrollDBService {
 	public List<EmployeePayrollData> readDataForJoiningDates() throws DataBaseSQLException {
 		String sql = "SELECT*FROM employee_payroll WHERE start BETWEEN CAST('2020-01-01' AS DATE) AND DATE(NOW()) ;";
 		return readDataForASQL(sql);
+	}
+
+	public boolean addColumnInDatabase() throws DataBaseSQLException {
+		String sql = "ALTER TABLE employee_payroll ADD gender CHAR(1) CHECK (gender='M' OR gender='F') AFTER name;";
+		return executeSql(sql);
+	}
+
+	public boolean updateGender() throws DataBaseSQLException {
+		String sql = "UPDATE employee_payroll SET gender='M' WHERE name='Bill' or name='Charlie' ;";
+		boolean result = executeSql(sql);
+		String sql2 = "UPDATE employee_payroll SET gender='F' WHERE name='Terisa' ;";
+		boolean result2 = executeSql(sql2);
+		return result && result2;
+	}
+
+	private boolean executeSql(String sql) throws DataBaseSQLException {
+		try {
+			getPrepareStatementInstance(sql).execute();
+			preparedStatement.close();
+			return true;
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
 	}
 
 }

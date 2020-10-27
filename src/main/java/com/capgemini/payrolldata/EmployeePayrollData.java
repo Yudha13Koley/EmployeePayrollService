@@ -5,6 +5,7 @@ import java.time.LocalDate;
 public class EmployeePayrollData {
 	private int id;
 	private String name;
+	private char gender;
 	private double salary;
 	private LocalDate startDate;
 
@@ -15,9 +16,10 @@ public class EmployeePayrollData {
 		this.salary = salary;
 	}
 
-	public EmployeePayrollData(int id2, String name2, double salary2, LocalDate startdate) {
+	public EmployeePayrollData(int id2, String name2, double salary2, LocalDate startdate, char gender) {
 		this(id2, name2, salary2);
 		this.startDate = startdate;
+		this.gender = gender;
 	}
 
 	public int getId() {
@@ -46,8 +48,8 @@ public class EmployeePayrollData {
 
 	@Override
 	public String toString() {
-		return "EmployeePayrollData [id=" + id + ", name=" + name + ", salary=" + salary + ", startDate=" + startDate
-				+ "]";
+		return "EmployeePayrollData [id=" + id + ", name=" + name + ", gender=" + gender + ", salary=" + salary
+				+ ", startDate=" + startDate + "]";
 	}
 
 	@Override
@@ -59,6 +61,8 @@ public class EmployeePayrollData {
 		if (getClass() != obj.getClass())
 			return false;
 		EmployeePayrollData other = (EmployeePayrollData) obj;
+		if (gender != other.gender)
+			return false;
 		if (id != other.id)
 			return false;
 		if (name == null) {

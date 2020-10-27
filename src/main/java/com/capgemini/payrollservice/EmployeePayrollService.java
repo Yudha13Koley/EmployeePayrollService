@@ -108,4 +108,12 @@ public class EmployeePayrollService {
 		this.employeePayrollList = employeePayrollDBService.readDataForJoiningDates();
 	}
 
+	public boolean modifyDatabase() throws DataBaseSQLException {
+		return employeePayrollDBService.addColumnInDatabase();
+	}
+
+	public boolean updateGenderColumn() throws DataBaseSQLException {
+		return employeePayrollDBService.updateGender();
+	}
+
 }
