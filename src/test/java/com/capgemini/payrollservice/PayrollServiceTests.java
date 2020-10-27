@@ -7,6 +7,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.capgemini.exceptions.DataBaseSQLException;
 import com.capgemini.payrolldata.EmployeePayrollData;
 import com.capgemini.payrollservice.EmployeePayrollService.IOService;
 
@@ -35,7 +36,7 @@ public class PayrollServiceTests {
 	}
 
 	@Test
-	public void given3Employees_WhenWrittenToFiles_ShouldReadFromThatFile() {
+	public void given3Employees_WhenWrittenToFiles_ShouldReadFromThatFile() throws DataBaseSQLException {
 		List<EmployeePayrollData> emp = new LinkedList<>();
 		EmployeePayrollService EPS = new EmployeePayrollService(emp);
 		EPS.readData(IOService.FILE_IO);

@@ -1,3 +1,1 @@
-EmployeePayrollData [id=1, name=Yudha, salary=100.67] 
-EmployeePayrollData [id=2, name=Raman, salary=456.78] 
-EmployeePayrollData [id=3, name=Tapan, salary=78.35] 
+EmployeePayrollData [id=1, name=Yudha, salary=100.67, startDate=null]EmployeePayrollData [id=2, name=Raman, salary=456.78, startDate=null]EmployeePayrollData [id=3, name=Tapan, salary=78.35, startDate=null]

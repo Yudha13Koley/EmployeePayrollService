@@ -2,6 +2,8 @@ package com.capgemini.payrollservice;
 
 import java.util.*;
 
+import com.capgemini.databaseservice.EmployeePayrollDBService;
+import com.capgemini.exceptions.DataBaseSQLException;
 import com.capgemini.fileioservice.EmployeePayrollFileIOService;
 import com.capgemini.payrolldata.EmployeePayrollData;
 
@@ -20,7 +22,7 @@ public class EmployeePayrollService {
 		this.employeePayrollList = employeePayrollList;
 	}
 
-	public void readData(IOService fileIo) {
+	public void readData(IOService fileIo) throws DataBaseSQLException {
 		if (fileIo.equals(IOService.CONSOLE_IO)) {
 			Scanner sc = new Scanner(System.in);
 			System.out.println("Enter Employee ID : ");
@@ -33,6 +35,8 @@ public class EmployeePayrollService {
 			employeePayrollList.add(new EmployeePayrollData(id, name, salary));
 		} else if (fileIo.equals(IOService.FILE_IO)) {
 			this.employeePayrollList = new EmployeePayrollFileIOService().readDataFromFile(employeePayrollList);
+		} else if (fileIo.equals(IOService.DB_IO)) {
+			this.employeePayrollList = new EmployeePayrollDBService().readData();
 		}
 	}
 
