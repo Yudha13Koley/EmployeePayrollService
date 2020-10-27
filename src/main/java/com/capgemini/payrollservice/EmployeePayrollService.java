@@ -116,4 +116,8 @@ public class EmployeePayrollService {
 		return employeePayrollDBService.updateGender();
 	}
 
+	public Map<Character, Double> readAVGSalaries() throws DataBaseSQLException {
+		return employeePayrollDBService.readAVGSalariesByGender();
+	}
+
 }

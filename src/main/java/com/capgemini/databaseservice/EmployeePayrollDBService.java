@@ -7,7 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.capgemini.exceptions.DataBaseSQLException;
 import com.capgemini.payrolldata.EmployeePayrollData;
@@ -113,6 +115,23 @@ public class EmployeePayrollDBService {
 			getPrepareStatementInstance(sql).execute();
 			preparedStatement.close();
 			return true;
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
+	}
+
+	public Map<Character, Double> readAVGSalariesByGender() throws DataBaseSQLException {
+		String sql = "SELECT gender,AVG(salary) as average_salary FROM employee_payroll GROUP BY gender ;";
+		try {
+			ResultSet result = getPrepareStatementInstance(sql).executeQuery();
+			Map<Character, Double> resultMap = new HashMap<>();
+			while (result.next()) {
+				char gender = result.getString("gender").charAt(0);
+				double average_salary = result.getDouble("average_salary");
+				resultMap.put(gender, average_salary);
+			}
+			preparedStatement.close();
+			return resultMap;
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
 		}

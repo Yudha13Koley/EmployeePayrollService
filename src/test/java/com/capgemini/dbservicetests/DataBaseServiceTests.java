@@ -2,7 +2,9 @@ package com.capgemini.dbservicetests;
 
 import static org.junit.Assert.fail;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,6 +72,24 @@ public class DataBaseServiceTests {
 		List<EmployeePayrollData> empList = employeePayrollService.employeePayrollList;
 		System.out.println(empList);
 		Assert.assertEquals(true, result);
+	}
+
+	@Test
+	public void givenEmployeePayrollDataBase_whenCalculatedAvgSalariesByGender_shouldReturnAvgSalaries() {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		Map<Character, Double> result = new HashMap<>();
+		try {
+			employeePayrollService.readData(IOService.DB_IO);
+			result = employeePayrollService.readAVGSalaries();
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+			fail();
+		}
+		for (Map.Entry<Character, Double> entry : result.entrySet()) {
+			System.out.println(entry.getKey());
+			System.out.println(entry.getValue());
+		}
+		Assert.assertEquals(2500000, result.get('M'), 0.01);
 	}
 
 }
