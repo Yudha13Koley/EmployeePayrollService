@@ -54,19 +54,25 @@ public class EmployeePayrollDBService {
 		ResultSet result = null;
 		try {
 			result = getPrepareStatementInstance(sql).executeQuery();
-			while (result.next()) {
-				int id = result.getInt("id");
-				String name = result.getString("name");
-				double salary = result.getDouble("salary");
-				LocalDate startdate = result.getDate("start").toLocalDate();
-				emplist.add(new EmployeePayrollData(id, name, salary, startdate));
-			}
+			emplist = getListOfEntries(result, emplist);
 			preparedStatement.close();
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
 		}
 		return emplist;
 
+	}
+
+	private List<EmployeePayrollData> getListOfEntries(ResultSet result, List<EmployeePayrollData> emplist)
+			throws SQLException {
+		while (result.next()) {
+			int id = result.getInt("id");
+			String name = result.getString("name");
+			double salary = result.getDouble("salary");
+			LocalDate startdate = result.getDate("start").toLocalDate();
+			emplist.add(new EmployeePayrollData(id, name, salary, startdate));
+		}
+		return emplist;
 	}
 
 	public int setSalaryOfEmployee(String name, double salary) throws DataBaseSQLException {
