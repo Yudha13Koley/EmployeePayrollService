@@ -27,4 +27,19 @@ public class DataBaseServiceTests {
 		Assert.assertEquals(3, empList.size());
 	}
 
+	@Test
+	public void givenEmployeePayrollDataBase_whenUpdateAValueForAnEmployee_shouldSyncWithDatabase() {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		try {
+			employeePayrollService.readData(IOService.DB_IO);
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+			fail();
+		}
+		employeePayrollService.updateSalaryOfAnEmployeeInDB("Terisa", 4000000.00);
+		boolean result = employeePayrollService.isEmployeeSyncWithDatabase("Terisa");
+		Assert.assertEquals(true, result);
+
+	}
+
 }

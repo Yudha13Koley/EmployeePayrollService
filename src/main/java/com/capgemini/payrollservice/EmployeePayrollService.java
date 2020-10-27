@@ -72,4 +72,33 @@ public class EmployeePayrollService {
 
 	}
 
+	public void updateSalaryOfAnEmployeeInDB(String name, double salary) {
+		try {
+			int result = new EmployeePayrollDBService().setSalaryOfEmployee(name, salary);
+			System.out.println("No of rows updated : " + result);
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+		}
+		EmployeePayrollData empData = this.getEmployee(this.employeePayrollList, name);
+		if (empData != null) {
+			empData.setSalary(salary);
+		}
+
+	}
+
+	private EmployeePayrollData getEmployee(List<EmployeePayrollData> list, String name) {
+		return list.stream().filter(n -> n.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+	}
+
+	public boolean isEmployeeSyncWithDatabase(String name) {
+		List<EmployeePayrollData> empList = new ArrayList<>();
+		try {
+			empList = new EmployeePayrollDBService().readData();
+		} catch (DataBaseSQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return getEmployee(empList, name).equals(getEmployee(employeePayrollList, name));
+	}
+
 }

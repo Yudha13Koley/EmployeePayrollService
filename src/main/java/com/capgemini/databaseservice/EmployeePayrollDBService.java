@@ -46,4 +46,14 @@ public class EmployeePayrollDBService {
 		return conn;
 	}
 
+	public int setSalaryOfEmployee(String name, double salary) throws DataBaseSQLException {
+		String sql = String.format("UPDATE employee_payroll SET salary=%.2f WHERE name='%s' ;", salary, name);
+		try (Connection connection = this.getConnection()) {
+			Statement statement = connection.createStatement();
+			return statement.executeUpdate(sql);
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
+	}
+
 }
