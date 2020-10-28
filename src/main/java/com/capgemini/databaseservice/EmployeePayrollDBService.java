@@ -164,9 +164,12 @@ public class EmployeePayrollDBService {
 				"INSERT INTO employee_payroll (name,gender,salary,start) VALUES ('%s','%s',%.2f,'%s'); ", name, gender,
 				salary, Date.valueOf(start));
 		EmployeePayrollData empData = null;
+		Connection connection = null;
 		int employee_id = -1;
 		try {
-			preparedStatement = getPrepareStatementInstance(sql);
+			connection = this.getConnection();
+			connection.setAutoCommit(false);
+			preparedStatement = connection.prepareStatement(sql);
 			int rowAffected = preparedStatement.executeUpdate(sql, preparedStatement.RETURN_GENERATED_KEYS);
 			if (rowAffected == 1) {
 				ResultSet resultSet = preparedStatement.getGeneratedKeys();
@@ -175,6 +178,11 @@ public class EmployeePayrollDBService {
 				}
 			}
 		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				throw new DataBaseSQLException(e.getMessage());
+			}
 			throw new DataBaseSQLException(e.getMessage());
 		}
 		double deductions = 0.2 * salary;
@@ -198,10 +206,21 @@ public class EmployeePayrollDBService {
 			empData = new EmployeePayrollData(employee_id, name, salary, start, gender.charAt(0));
 
 		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				throw new DataBaseSQLException(e.getMessage());
+			}
+			throw new DataBaseSQLException(e.getMessage());
+		}
+		try {
+			connection.commit();
+		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
 		} finally {
 			try {
-				preparedStatement.close();
+				if (connection != null)
+					connection.close();
 			} catch (SQLException e) {
 				throw new DataBaseSQLException(e.getMessage());
 			}
