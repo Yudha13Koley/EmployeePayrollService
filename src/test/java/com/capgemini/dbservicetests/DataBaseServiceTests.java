@@ -89,13 +89,31 @@ public class DataBaseServiceTests {
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		try {
 			employeePayrollService.readData(IOService.DB_IO);
-			employeePayrollService.addEmployeeInDatabase(1, "Mark", "M", 3500000, LocalDate.now(),new int[] {4});
+			employeePayrollService.addEmployeeInDatabase(1, "Mark", "M", 3500000, LocalDate.now(), new int[] { 4 });
 		} catch (DataBaseSQLException e) {
 			e.printStackTrace();
 			fail();
 		}
 		try {
 			Assert.assertEquals(true, employeePayrollService.isEmployeeSyncWithDatabase("Mark"));
+		} catch (DataBaseSQLException e) {
+			fail();
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void givenEmployeePayrollDataBase_whenAddedEmployeeAndUpdatedAllTables_shouldSyncTheEntryWithDatabase() {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		try {
+			employeePayrollService.readData(IOService.DB_IO);
+			employeePayrollService.addEmployeeInDatabase(1, "Mina", "F", 5500000, LocalDate.now(), new int[] { 1, 2 });
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+			fail();
+		}
+		try {
+			Assert.assertEquals(true, employeePayrollService.isEmployeeSyncWithDatabase("Mina"));
 		} catch (DataBaseSQLException e) {
 			fail();
 			e.printStackTrace();
