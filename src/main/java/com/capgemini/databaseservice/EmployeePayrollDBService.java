@@ -270,4 +270,25 @@ public class EmployeePayrollDBService {
 		return empData;
 	}
 
+	public boolean deleteEmployee(String name) throws DataBaseSQLException {
+		String sql = String.format(
+				"DELETE FROM employee_payroll WHERE employee_id=(SELECT employee_id FROM employee_details WHERE name='%s') ;",
+				name);
+		String sql2 = String.format(
+				"DELETE FROM employee_department WHERE employee_id=(SELECT employee_id FROM employee_details WHERE name='%s') ;",
+				name);
+		String sql3 = String.format("UPDATE employee_details SET is_active=false WHERE name='%s' ;", name);
+		try {
+			preparedStatement = getPrepareStatementInstance(sql);
+			boolean b = preparedStatement.execute();
+			boolean b2 = preparedStatement.execute(sql2);
+			boolean b3 = preparedStatement.execute(sql3);
+			preparedStatement.close();
+			return !(b && b2 && b3);
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
+
+	}
+
 }

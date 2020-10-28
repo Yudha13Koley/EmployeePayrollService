@@ -28,7 +28,7 @@ public class DataBaseServiceTests {
 		}
 		List<EmployeePayrollData> empList = employeePayrollService.employeePayrollList;
 		System.out.println(empList);
-		Assert.assertEquals(3, empList.size());
+		Assert.assertEquals(4, empList.size());
 	}
 
 	@Test
@@ -118,6 +118,20 @@ public class DataBaseServiceTests {
 			fail();
 			e.printStackTrace();
 		}
+	}
+
+	@Test
+	public void givenEmployeePayrollDataBase_whenDeletedEmployeeAndUpdatedAllTables_should() {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		try {
+			employeePayrollService.readData(IOService.DB_IO);
+			employeePayrollService.deleteEmployeeInDatabase("Mina");
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+			fail();
+		}
+		System.out.println(employeePayrollService.employeePayrollList);
+		Assert.assertEquals(4, employeePayrollService.employeePayrollList.size());
 	}
 
 }

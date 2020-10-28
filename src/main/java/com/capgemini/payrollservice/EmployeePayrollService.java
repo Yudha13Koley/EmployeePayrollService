@@ -126,4 +126,13 @@ public class EmployeePayrollService {
 				employeePayrollDBService.addEmployeeToPayroll(company_id, name, gender, salary, start, department_id));
 	}
 
+	public void deleteEmployeeInDatabase(String name) throws DataBaseSQLException {
+		boolean result = this.employeePayrollDBService.deleteEmployee(name);
+		System.out.println(result);
+		if (result) {
+			EmployeePayrollData emp = getEmployee(employeePayrollList, name);
+			employeePayrollList.remove(emp);
+		}
+	}
+
 }
