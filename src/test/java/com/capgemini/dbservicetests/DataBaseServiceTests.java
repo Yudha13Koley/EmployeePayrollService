@@ -2,6 +2,7 @@ package com.capgemini.dbservicetests;
 
 import static org.junit.Assert.fail;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,13 @@ public class DataBaseServiceTests {
 			fail();
 		}
 		employeePayrollService.updateSalaryOfAnEmployeeInDB("Terisa", 4000000.00);
-		boolean result = employeePayrollService.isEmployeeSyncWithDatabase("Terisa");
+		boolean result = false;
+		try {
+			result = employeePayrollService.isEmployeeSyncWithDatabase("Terisa");
+		} catch (DataBaseSQLException e) {
+			fail();
+			e.printStackTrace();
+		}
 		Assert.assertEquals(true, result);
 
 	}
@@ -90,6 +97,24 @@ public class DataBaseServiceTests {
 			System.out.println(entry.getValue());
 		}
 		Assert.assertEquals(2500000, result.get('M'), 0.01);
+	}
+
+	@Test
+	public void givenEmployeePayrollDataBase_whenAddedAnEmployee_shouldReturnNumberOfEntries() {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		try {
+			employeePayrollService.readData(IOService.DB_IO);
+			employeePayrollService.addEmployeeInDatabase("Mark", "M", 2500000, LocalDate.now());
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+			fail();
+		}
+		try {
+			Assert.assertEquals(true, employeePayrollService.isEmployeeSyncWithDatabase("Mark"));
+		} catch (DataBaseSQLException e) {
+			fail();
+			e.printStackTrace();
+		}
 	}
 
 }

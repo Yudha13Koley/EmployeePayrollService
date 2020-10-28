@@ -1,6 +1,7 @@
 package com.capgemini.databaseservice;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,6 +9,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -135,6 +137,54 @@ public class EmployeePayrollDBService {
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
 		}
+	}
+
+	public EmployeePayrollData addEmployee(String name, String gender, double salary, LocalDate start)
+			throws DataBaseSQLException {
+		String sql = String.format(
+				"INSERT INTO employee_payroll (name,gender,salary,start) VALUES ('%s','%s',%.2f,'%s'); ", name, gender,
+				salary, Date.valueOf(start));
+		EmployeePayrollData empData = null;
+		try {
+			preparedStatement = getPrepareStatementInstance(sql);
+			int rowAffected = preparedStatement.executeUpdate(sql, preparedStatement.RETURN_GENERATED_KEYS);
+			int employee_id = -1;
+			if (rowAffected == 1) {
+				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				if (resultSet.next()) {
+					employee_id = resultSet.getInt(1);
+				}
+			}
+			empData = new EmployeePayrollData(employee_id, name, salary, start, gender.charAt(0));
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		} finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				throw new DataBaseSQLException(e.getMessage());
+			}
+		}
+		return empData;
+	}
+
+	public EmployeePayrollData getEmployeeFromDatabase(String name) throws DataBaseSQLException {
+		String sql = String.format("SELECT*FROM employee_payroll WHERE name='%s';", name);
+		List<EmployeePayrollData> empList = new LinkedList<>();
+		preparedStatement = getPrepareStatementInstance(sql);
+		try {
+			ResultSet resultset = preparedStatement.executeQuery();
+			empList = getListOfEntries(resultset, empList);
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		} finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				throw new DataBaseSQLException(e.getMessage());
+			}
+		}
+		return empList.get(0);
 	}
 
 }

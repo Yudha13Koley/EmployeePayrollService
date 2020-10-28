@@ -1,5 +1,6 @@
 package com.capgemini.payrollservice;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import com.capgemini.databaseservice.EmployeePayrollDBService;
@@ -93,15 +94,14 @@ public class EmployeePayrollService {
 
 	}
 
-	public boolean isEmployeeSyncWithDatabase(String name) {
-		List<EmployeePayrollData> empList = new ArrayList<>();
+	public boolean isEmployeeSyncWithDatabase(String name) throws DataBaseSQLException {
+		EmployeePayrollData empData = null;
 		try {
-			empList = employeePayrollDBService.readData();
+			empData = employeePayrollDBService.getEmployeeFromDatabase(name);
 		} catch (DataBaseSQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new DataBaseSQLException(e.getMessage());
 		}
-		return getEmployee(empList, name).equals(getEmployee(employeePayrollList, name));
+		return empData.equals(getEmployee(employeePayrollList, name));
 	}
 
 	public void readDataForACondition() throws DataBaseSQLException {
@@ -118,6 +118,11 @@ public class EmployeePayrollService {
 
 	public Map<Character, Double> readAVGSalaries() throws DataBaseSQLException {
 		return employeePayrollDBService.readAVGSalariesByGender();
+	}
+
+	public void addEmployeeInDatabase(String name, String gender, double salary, LocalDate start)
+			throws DataBaseSQLException {
+		this.employeePayrollList.add(employeePayrollDBService.addEmployee(name, gender, salary, start));
 	}
 
 }
