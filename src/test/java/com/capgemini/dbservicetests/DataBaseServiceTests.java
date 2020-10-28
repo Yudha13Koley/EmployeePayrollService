@@ -27,6 +27,7 @@ public class DataBaseServiceTests {
 			fail();
 		}
 		List<EmployeePayrollData> empList = employeePayrollService.employeePayrollList;
+		System.out.println(empList);
 		Assert.assertEquals(3, empList.size());
 	}
 
@@ -39,10 +40,10 @@ public class DataBaseServiceTests {
 			e.printStackTrace();
 			fail();
 		}
-		employeePayrollService.updateSalaryOfAnEmployeeInDB("Terisa", 4000000.00);
+		employeePayrollService.updateSalaryOfAnEmployeeInDB("Rita", 7000000.00);
 		boolean result = false;
 		try {
-			result = employeePayrollService.isEmployeeSyncWithDatabase("Terisa");
+			result = employeePayrollService.isEmployeeSyncWithDatabase("Rita");
 		} catch (DataBaseSQLException e) {
 			fail();
 			e.printStackTrace();
@@ -62,23 +63,7 @@ public class DataBaseServiceTests {
 		}
 		List<EmployeePayrollData> empList = employeePayrollService.employeePayrollList;
 		System.out.println(empList);
-		Assert.assertEquals(1, empList.size());
-	}
-
-	@Test
-	public void givenEmployeePayrollDataBase_whenDoneCURDOperationsAndUpdated_shouldReturnTrue() {
-		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
-		boolean result = false;
-		try {
-			result = employeePayrollService.updateGenderColumn();
-			employeePayrollService.readData(IOService.DB_IO);
-		} catch (DataBaseSQLException e) {
-			e.printStackTrace();
-			fail();
-		}
-		List<EmployeePayrollData> empList = employeePayrollService.employeePayrollList;
-		System.out.println(empList);
-		Assert.assertEquals(true, result);
+		Assert.assertEquals(2, empList.size());
 	}
 
 	@Test
@@ -96,15 +81,15 @@ public class DataBaseServiceTests {
 			System.out.println(entry.getKey());
 			System.out.println(entry.getValue());
 		}
-		Assert.assertEquals(2500000, result.get('M'), 0.01);
+		Assert.assertEquals(3500000, result.get('M'), 0.01);
 	}
 
 	@Test
-	public void givenEmployeePayrollDataBase_whenAddedAnEmployee_shouldReturnNumberOfEntries() {
+	public void givenEmployeePayrollDataBase_whenAddedAnEmployee_shouldSyncTheEntryWithDatabase() {
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		try {
 			employeePayrollService.readData(IOService.DB_IO);
-			employeePayrollService.addEmployeeInDatabase("Mark", "M", 3500000, LocalDate.now());
+			employeePayrollService.addEmployeeInDatabase(1, "Mark", "M", 3500000, LocalDate.now(),new int[] {4});
 		} catch (DataBaseSQLException e) {
 			e.printStackTrace();
 			fail();

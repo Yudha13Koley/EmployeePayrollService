@@ -108,21 +108,22 @@ public class EmployeePayrollService {
 		this.employeePayrollList = employeePayrollDBService.readDataForJoiningDates();
 	}
 
-	public boolean modifyDatabase() throws DataBaseSQLException {
-		return employeePayrollDBService.addColumnInDatabase();
-	}
-
-	public boolean updateGenderColumn() throws DataBaseSQLException {
-		return employeePayrollDBService.updateGender();
-	}
+	/*
+	 * public boolean modifyDatabase() throws DataBaseSQLException { return
+	 * employeePayrollDBService.addColumnInDatabase(); }
+	 * 
+	 * public boolean updateGenderColumn() throws DataBaseSQLException { return
+	 * employeePayrollDBService.updateGender(); }
+	 */
 
 	public Map<Character, Double> readAVGSalaries() throws DataBaseSQLException {
 		return employeePayrollDBService.readAVGSalariesByGender();
 	}
 
-	public void addEmployeeInDatabase(String name, String gender, double salary, LocalDate start)
-			throws DataBaseSQLException {
-		this.employeePayrollList.add(employeePayrollDBService.addEmployeeToPayroll(name, gender, salary, start));
+	public void addEmployeeInDatabase(int company_id, String name, String gender, double salary, LocalDate start,
+			int[] department_id) throws DataBaseSQLException {
+		this.employeePayrollList.add(
+				employeePayrollDBService.addEmployeeToPayroll(company_id, name, gender, salary, start, department_id));
 	}
 
 }

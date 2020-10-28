@@ -1,13 +1,17 @@
 package com.capgemini.payrolldata;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class EmployeePayrollData {
 	private int id;
+	private String company_name;
 	private String name;
+	private String address;
 	private char gender;
 	private double salary;
 	private LocalDate startDate;
+	private List<Integer> department_ids;
 
 	public EmployeePayrollData(int id, String name, double salary) {
 		super();
@@ -16,10 +20,14 @@ public class EmployeePayrollData {
 		this.salary = salary;
 	}
 
-	public EmployeePayrollData(int id2, String name2, double salary2, LocalDate startdate, char gender) {
+	public EmployeePayrollData(int id2, String company_name, String name2, String address, double salary2,
+			LocalDate startdate, char gender, List<Integer> department_ids) {
 		this(id2, name2, salary2);
 		this.startDate = startdate;
 		this.gender = gender;
+		this.company_name = company_name;
+		this.address = address;
+		this.department_ids = department_ids;
 	}
 
 	public int getId() {
@@ -48,8 +56,9 @@ public class EmployeePayrollData {
 
 	@Override
 	public String toString() {
-		return "EmployeePayrollData [id=" + id + ", name=" + name + ", gender=" + gender + ", salary=" + salary
-				+ ", startDate=" + startDate + "]";
+		return "EmployeePayrollData [id=" + id + ", company_name=" + company_name + ", name=" + name + ", address="
+				+ address + ", gender=" + gender + ", salary=" + salary + ", startDate=" + startDate
+				+ ", department_ids=" + department_ids + "]";
 	}
 
 	@Override

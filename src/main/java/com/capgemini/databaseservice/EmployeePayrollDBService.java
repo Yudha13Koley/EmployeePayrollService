@@ -42,7 +42,7 @@ public class EmployeePayrollDBService {
 	}
 
 	private Connection getConnection() throws SQLException {
-		String jdbcUrl = "jdbc:mysql://localhost:3306/simple_employee_payroll";
+		String jdbcUrl = "jdbc:mysql://localhost:3306/payroll_service";
 		String userName = "root";
 		String passWord = "Yudha@123";
 		Connection conn;
@@ -68,23 +68,35 @@ public class EmployeePayrollDBService {
 	private List<EmployeePayrollData> getListOfEntries(ResultSet result, List<EmployeePayrollData> emplist)
 			throws SQLException {
 		while (result.next()) {
-			int id = result.getInt("id");
+			int id = result.getInt("employee_id");
+			String company_name = result.getString("company_name");
 			String name = result.getString("name");
-			double salary = result.getDouble("salary");
+			String address = result.getString("address");
+			double salary = result.getDouble("basic_pay");
 			LocalDate startdate = result.getDate("start").toLocalDate();
 			char gender = result.getString("gender").charAt(0);
-			emplist.add(new EmployeePayrollData(id, name, salary, startdate, gender));
+			String[] departments = result.getString("departments").split(",");
+			List<Integer> department_ids = new ArrayList<>();
+			for (String s : departments) {
+				department_ids.add(Integer.parseInt(s));
+			}
+			emplist.add(new EmployeePayrollData(id, company_name, name, address, salary, startdate, gender,
+					department_ids));
 		}
 		return emplist;
 	}
 
 	public List<EmployeePayrollData> readData() throws DataBaseSQLException {
-		String sql = "SELECT*FROM employee_payroll ;";
+		String sql = "Select a.employee_id,b.company_name,name,address,gender,start,phone_no,c.basic_pay,group_concat(d.department_id) as departments FROM "
+				+ "employee_details a,companies b,employee_payroll c,employee_department d "
+				+ "WHERE a.employee_id=c.employee_id AND a.company_id=b.company_id AND a.employee_id=d.employee_id "
+				+ " GROUP BY a.employee_id;";
 		return readDataForASQL(sql);
 	}
 
 	public int setSalaryOfEmployee(String name, double salary) throws DataBaseSQLException {
-		String sql = String.format("UPDATE employee_payroll SET salary=%.2f WHERE name='%s' ;", salary, name);
+		String sql = String.format("UPDATE employee_payroll SET basic_pay=%.2f WHERE employee_id="
+				+ "(SELECT employee_id FROM employee_details WHERE name='%s');", salary, name);
 		try {
 			int n = getPrepareStatementInstance(sql).executeUpdate();
 			preparedStatement.close();
@@ -95,35 +107,38 @@ public class EmployeePayrollDBService {
 	}
 
 	public List<EmployeePayrollData> readDataForJoiningDates() throws DataBaseSQLException {
-		String sql = "SELECT*FROM employee_payroll WHERE start BETWEEN CAST('2020-01-01' AS DATE) AND DATE(NOW()) ;";
+		String sql = "Select a.employee_id,b.company_name,name,address,gender,start,phone_no,c.basic_pay,group_concat(d.department_id) as departments FROM "
+				+ "employee_details a,companies b,employee_payroll c,employee_department d "
+				+ "WHERE a.employee_id=c.employee_id AND a.company_id=b.company_id AND a.employee_id=d.employee_id "
+				+ "AND a.start BETWEEN CAST('2020-01-01' AS DATE) AND DATE(NOW()) GROUP BY a.employee_id ; ";
 		return readDataForASQL(sql);
 	}
 
-	public boolean addColumnInDatabase() throws DataBaseSQLException {
-		String sql = "ALTER TABLE employee_payroll ADD gender CHAR(1) CHECK (gender='M' OR gender='F') AFTER name;";
-		return executeSql(sql);
-	}
-
-	public boolean updateGender() throws DataBaseSQLException {
-		String sql = "UPDATE employee_payroll SET gender='M' WHERE name='Bill' or name='Charlie' ;";
-		boolean result = executeSql(sql);
-		String sql2 = "UPDATE employee_payroll SET gender='F' WHERE name='Terisa' ;";
-		boolean result2 = executeSql(sql2);
-		return result && result2;
-	}
-
-	private boolean executeSql(String sql) throws DataBaseSQLException {
-		try {
-			getPrepareStatementInstance(sql).execute();
-			preparedStatement.close();
-			return true;
-		} catch (SQLException e) {
-			throw new DataBaseSQLException(e.getMessage());
-		}
-	}
+	/*
+	 * public boolean addColumnInDatabase() throws DataBaseSQLException { String sql
+	 * =
+	 * "ALTER TABLE employee_payroll ADD gender CHAR(1) CHECK (gender='M' OR gender='F') AFTER name;"
+	 * ; return executeSql(sql); }
+	 * 
+	 * public boolean updateGender() throws DataBaseSQLException { String sql =
+	 * "UPDATE employee_payroll SET gender='M' WHERE name='Bill' or name='Charlie' ;"
+	 * ; boolean result = executeSql(sql); String sql2 =
+	 * "UPDATE employee_payroll SET gender='F' WHERE name='Terisa' ;"; boolean
+	 * result2 = executeSql(sql2); return result && result2; }
+	 * 
+	 * private boolean executeSql(String sql) throws DataBaseSQLException { try {
+	 * getPrepareStatementInstance(sql).execute(); preparedStatement.close(); return
+	 * true; } catch (SQLException e) { throw new
+	 * DataBaseSQLException(e.getMessage()); } }
+	 */
 
 	public EmployeePayrollData getEmployeeFromDatabase(String name) throws DataBaseSQLException {
-		String sql = String.format("SELECT*FROM employee_payroll WHERE name='%s';", name);
+		String sql = String.format(
+				"Select a.employee_id,b.company_name,name,address,gender,start,phone_no,c.basic_pay,group_concat(d.department_id) as departments FROM "
+						+ "employee_details a,companies b,employee_payroll c,employee_department d "
+						+ "WHERE a.employee_id=c.employee_id AND a.company_id=b.company_id AND a.employee_id=d.employee_id AND a.name='%s' "
+						+ " GROUP BY a.employee_id;",
+				name);
 		List<EmployeePayrollData> empList = new LinkedList<>();
 		preparedStatement = getPrepareStatementInstance(sql);
 		try {
@@ -142,7 +157,8 @@ public class EmployeePayrollDBService {
 	}
 
 	public Map<Character, Double> readAVGSalariesByGender() throws DataBaseSQLException {
-		String sql = "SELECT gender,AVG(salary) as average_salary FROM employee_payroll GROUP BY gender ;";
+		String sql = "SELECT a.gender,AVG(b.basic_pay) as average_salary FROM employee_details a,employee_payroll b "
+				+ "WHERE a.employee_id=b.employee_id GROUP BY a.gender ;";
 		try {
 			ResultSet result = getPrepareStatementInstance(sql).executeQuery();
 			Map<Character, Double> resultMap = new HashMap<>();
@@ -158,11 +174,11 @@ public class EmployeePayrollDBService {
 		}
 	}
 
-	public EmployeePayrollData addEmployeeToPayroll(String name, String gender, double salary, LocalDate start)
-			throws DataBaseSQLException {
+	public EmployeePayrollData addEmployeeToPayroll(int company_id, String name, String gender, double salary,
+			LocalDate start, int[] department_ids) throws DataBaseSQLException {
 		String sql = String.format(
-				"INSERT INTO employee_payroll (name,gender,salary,start) VALUES ('%s','%s',%.2f,'%s'); ", name, gender,
-				salary, Date.valueOf(start));
+				"INSERT INTO employee_details (company_id,name,gender,start) VALUES (%d,'%s','%s','%s'); ", company_id,
+				name, gender, Date.valueOf(start));
 		EmployeePayrollData empData = null;
 		Connection connection = null;
 		int employee_id = -1;
@@ -191,7 +207,7 @@ public class EmployeePayrollDBService {
 		double net_pay = taxable_pay - tax;
 
 		String sqlToAddPayrollDetails = String.format(
-				"INSERT INTO payroll_details(employee_id,basic_pay,deductions,taxable_pay,tax,net_pay)"
+				"INSERT INTO employee_payroll (employee_id,basic_pay,deductions,taxable_pay,tax,net_pay)"
 						+ "VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f) ;",
 				employee_id, salary, deductions, taxable_pay, tax, net_pay);
 		try {
@@ -203,8 +219,6 @@ public class EmployeePayrollDBService {
 					employee_id = resultSet.getInt(1);
 				}
 			}
-			empData = new EmployeePayrollData(employee_id, name, salary, start, gender.charAt(0));
-
 		} catch (SQLException e) {
 			try {
 				connection.rollback();
@@ -213,6 +227,34 @@ public class EmployeePayrollDBService {
 			}
 			throw new DataBaseSQLException(e.getMessage());
 		}
+		for (int department_id : department_ids) {
+			String sqlToAddDepartment = String.format(
+					"INSERT INTO employee_department(employee_id,department_id) " + "VALUES (%d,%d) ;", employee_id,
+					department_id);
+			try {
+				int rowAffected = preparedStatement.executeUpdate(sqlToAddDepartment,
+						preparedStatement.RETURN_GENERATED_KEYS);
+				if (rowAffected == 1) {
+					ResultSet resultSet = preparedStatement.getGeneratedKeys();
+					if (resultSet.next()) {
+						employee_id = resultSet.getInt(1);
+					}
+				}
+			} catch (SQLException e) {
+				try {
+					connection.rollback();
+				} catch (SQLException e1) {
+					throw new DataBaseSQLException(e.getMessage());
+				}
+				throw new DataBaseSQLException(e.getMessage());
+			}
+		}
+		List<Integer> departmentList = new ArrayList<>();
+		for (int s : department_ids) {
+			departmentList.add(s);
+		}
+		empData = new EmployeePayrollData(employee_id, "Capgemini", name, "TBD", salary, start, gender.charAt(0),
+				departmentList);
 		try {
 			connection.commit();
 		} catch (SQLException e) {
