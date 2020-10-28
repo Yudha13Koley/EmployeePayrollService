@@ -104,7 +104,7 @@ public class DataBaseServiceTests {
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		try {
 			employeePayrollService.readData(IOService.DB_IO);
-			employeePayrollService.addEmployeeInDatabase("Mark", "M", 2500000, LocalDate.now());
+			employeePayrollService.addEmployeeInDatabase("Mark", "M", 3500000, LocalDate.now());
 		} catch (DataBaseSQLException e) {
 			e.printStackTrace();
 			fail();

@@ -122,7 +122,7 @@ public class EmployeePayrollService {
 
 	public void addEmployeeInDatabase(String name, String gender, double salary, LocalDate start)
 			throws DataBaseSQLException {
-		this.employeePayrollList.add(employeePayrollDBService.addEmployee(name, gender, salary, start));
+		this.employeePayrollList.add(employeePayrollDBService.addEmployeeToPayroll(name, gender, salary, start));
 	}
 
 }

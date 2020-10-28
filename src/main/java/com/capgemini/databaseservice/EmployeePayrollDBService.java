@@ -24,6 +24,13 @@ public class EmployeePayrollDBService {
 	private EmployeePayrollDBService() {
 	}
 
+	public static EmployeePayrollDBService getDBServiceInstance() {
+		if (empployeePayrollDBService == null)
+			return new EmployeePayrollDBService();
+		else
+			return empployeePayrollDBService;
+	}
+
 	private PreparedStatement getPrepareStatementInstance(String sql) throws DataBaseSQLException {
 		try {
 			Connection connection = this.getConnection();
@@ -71,13 +78,6 @@ public class EmployeePayrollDBService {
 		return emplist;
 	}
 
-	public static EmployeePayrollDBService getDBServiceInstance() {
-		if (empployeePayrollDBService == null)
-			return new EmployeePayrollDBService();
-		else
-			return empployeePayrollDBService;
-	}
-
 	public List<EmployeePayrollData> readData() throws DataBaseSQLException {
 		String sql = "SELECT*FROM employee_payroll ;";
 		return readDataForASQL(sql);
@@ -122,52 +122,6 @@ public class EmployeePayrollDBService {
 		}
 	}
 
-	public Map<Character, Double> readAVGSalariesByGender() throws DataBaseSQLException {
-		String sql = "SELECT gender,AVG(salary) as average_salary FROM employee_payroll GROUP BY gender ;";
-		try {
-			ResultSet result = getPrepareStatementInstance(sql).executeQuery();
-			Map<Character, Double> resultMap = new HashMap<>();
-			while (result.next()) {
-				char gender = result.getString("gender").charAt(0);
-				double average_salary = result.getDouble("average_salary");
-				resultMap.put(gender, average_salary);
-			}
-			preparedStatement.close();
-			return resultMap;
-		} catch (SQLException e) {
-			throw new DataBaseSQLException(e.getMessage());
-		}
-	}
-
-	public EmployeePayrollData addEmployee(String name, String gender, double salary, LocalDate start)
-			throws DataBaseSQLException {
-		String sql = String.format(
-				"INSERT INTO employee_payroll (name,gender,salary,start) VALUES ('%s','%s',%.2f,'%s'); ", name, gender,
-				salary, Date.valueOf(start));
-		EmployeePayrollData empData = null;
-		try {
-			preparedStatement = getPrepareStatementInstance(sql);
-			int rowAffected = preparedStatement.executeUpdate(sql, preparedStatement.RETURN_GENERATED_KEYS);
-			int employee_id = -1;
-			if (rowAffected == 1) {
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
-				if (resultSet.next()) {
-					employee_id = resultSet.getInt(1);
-				}
-			}
-			empData = new EmployeePayrollData(employee_id, name, salary, start, gender.charAt(0));
-		} catch (SQLException e) {
-			throw new DataBaseSQLException(e.getMessage());
-		} finally {
-			try {
-				preparedStatement.close();
-			} catch (SQLException e) {
-				throw new DataBaseSQLException(e.getMessage());
-			}
-		}
-		return empData;
-	}
-
 	public EmployeePayrollData getEmployeeFromDatabase(String name) throws DataBaseSQLException {
 		String sql = String.format("SELECT*FROM employee_payroll WHERE name='%s';", name);
 		List<EmployeePayrollData> empList = new LinkedList<>();
@@ -185,6 +139,74 @@ public class EmployeePayrollDBService {
 			}
 		}
 		return empList.get(0);
+	}
+
+	public Map<Character, Double> readAVGSalariesByGender() throws DataBaseSQLException {
+		String sql = "SELECT gender,AVG(salary) as average_salary FROM employee_payroll GROUP BY gender ;";
+		try {
+			ResultSet result = getPrepareStatementInstance(sql).executeQuery();
+			Map<Character, Double> resultMap = new HashMap<>();
+			while (result.next()) {
+				char gender = result.getString("gender").charAt(0);
+				double average_salary = result.getDouble("average_salary");
+				resultMap.put(gender, average_salary);
+			}
+			preparedStatement.close();
+			return resultMap;
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
+	}
+
+	public EmployeePayrollData addEmployeeToPayroll(String name, String gender, double salary, LocalDate start)
+			throws DataBaseSQLException {
+		String sql = String.format(
+				"INSERT INTO employee_payroll (name,gender,salary,start) VALUES ('%s','%s',%.2f,'%s'); ", name, gender,
+				salary, Date.valueOf(start));
+		EmployeePayrollData empData = null;
+		int employee_id = -1;
+		try {
+			preparedStatement = getPrepareStatementInstance(sql);
+			int rowAffected = preparedStatement.executeUpdate(sql, preparedStatement.RETURN_GENERATED_KEYS);
+			if (rowAffected == 1) {
+				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				if (resultSet.next()) {
+					employee_id = resultSet.getInt(1);
+				}
+			}
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
+		double deductions = 0.2 * salary;
+		double taxable_pay = salary - deductions;
+		double tax = 0.1 * taxable_pay;
+		double net_pay = taxable_pay - tax;
+
+		String sqlToAddPayrollDetails = String.format(
+				"INSERT INTO payroll_details(employee_id,basic_pay,deductions,taxable_pay,tax,net_pay)"
+						+ "VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f) ;",
+				employee_id, salary, deductions, taxable_pay, tax, net_pay);
+		try {
+			int rowAffected = preparedStatement.executeUpdate(sqlToAddPayrollDetails,
+					preparedStatement.RETURN_GENERATED_KEYS);
+			if (rowAffected == 1) {
+				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				if (resultSet.next()) {
+					employee_id = resultSet.getInt(1);
+				}
+			}
+			empData = new EmployeePayrollData(employee_id, name, salary, start, gender.charAt(0));
+
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		} finally {
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				throw new DataBaseSQLException(e.getMessage());
+			}
+		}
+		return empData;
 	}
 
 }
