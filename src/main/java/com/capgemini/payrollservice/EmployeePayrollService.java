@@ -120,10 +120,10 @@ public class EmployeePayrollService {
 		return employeePayrollDBService.readAVGSalariesByGender();
 	}
 
-	public void addEmployeeInDatabase(int company_id, String name, String gender, double salary, LocalDate start,
-			int[] department_id) throws DataBaseSQLException {
+	public void addEmployeeInDatabase(int company_id, String name, char gender, double salary, LocalDate start,
+			List<Integer> departmentList) throws DataBaseSQLException {
 		this.employeePayrollList.add(
-				employeePayrollDBService.addEmployeeToPayroll(company_id, name, gender, salary, start, department_id));
+				employeePayrollDBService.addEmployeeToPayroll(company_id, name, gender, salary, start, departmentList));
 	}
 
 	public void deleteEmployeeInDatabase(String name) throws DataBaseSQLException {
@@ -133,6 +133,20 @@ public class EmployeePayrollService {
 			EmployeePayrollData emp = getEmployee(employeePayrollList, name);
 			employeePayrollList.remove(emp);
 		}
+	}
+
+	public void addListOfEmployee(List<EmployeePayrollData> empList) {
+		empList.forEach(emp -> {
+			System.out.println("Employee Being Added : " + emp.getName());
+			try {
+				this.addEmployeeInDatabase(1, emp.getName(), emp.getGender(), emp.getSalary(), emp.getStartDate(),
+						emp.getDepartment_ids());
+			} catch (DataBaseSQLException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Employee Added : " + emp.getName());
+		});
+		System.out.println(this.employeePayrollList);
 	}
 
 }

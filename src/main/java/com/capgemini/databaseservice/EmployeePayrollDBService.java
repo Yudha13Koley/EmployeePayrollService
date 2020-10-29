@@ -174,8 +174,8 @@ public class EmployeePayrollDBService {
 		}
 	}
 
-	public EmployeePayrollData addEmployeeToPayroll(int company_id, String name, String gender, double salary,
-			LocalDate start, int[] department_ids) throws DataBaseSQLException {
+	public EmployeePayrollData addEmployeeToPayroll(int company_id, String name, char gender, double salary,
+			LocalDate start, List<Integer> department_ids) throws DataBaseSQLException {
 		String sql = String.format(
 				"INSERT INTO employee_details (company_id,name,gender,start) VALUES (%d,'%s','%s','%s'); ", company_id,
 				name, gender, Date.valueOf(start));
@@ -249,12 +249,7 @@ public class EmployeePayrollDBService {
 				throw new DataBaseSQLException(e.getMessage());
 			}
 		}
-		List<Integer> departmentList = new ArrayList<>();
-		for (int s : department_ids) {
-			departmentList.add(s);
-		}
-		empData = new EmployeePayrollData(employee_id, "Capgemini", name, "TBD", salary, start, gender.charAt(0),
-				departmentList);
+		empData = new EmployeePayrollData(employee_id, "Capgemini", name, "TBD", salary, start, gender, department_ids);
 		try {
 			connection.commit();
 		} catch (SQLException e) {

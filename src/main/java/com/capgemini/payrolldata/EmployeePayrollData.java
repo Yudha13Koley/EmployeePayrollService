@@ -30,6 +30,40 @@ public class EmployeePayrollData {
 		this.department_ids = department_ids;
 	}
 
+	public char getGender() {
+		return gender;
+	}
+
+	public void setGender(char gender) {
+		this.gender = gender;
+	}
+
+	public LocalDate getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(LocalDate startDate) {
+		this.startDate = startDate;
+	}
+
+	public List<Integer> getDepartment_ids() {
+		return department_ids;
+	}
+
+	public void setDepartment_ids(List<Integer> department_ids) {
+		this.department_ids = department_ids;
+	}
+
+	public EmployeePayrollData(String company_name, String name, int salary, LocalDate now, char gender,
+			List<Integer> departments) {
+		this.company_name = company_name;
+		this.name = name;
+		this.salary = salary;
+		this.startDate = now;
+		this.gender = gender;
+		this.department_ids = departments;
+	}
+
 	public int getId() {
 		return id;
 	}

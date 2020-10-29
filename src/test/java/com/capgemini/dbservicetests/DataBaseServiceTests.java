@@ -2,7 +2,10 @@ package com.capgemini.dbservicetests;
 
 import static org.junit.Assert.fail;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +92,8 @@ public class DataBaseServiceTests {
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		try {
 			employeePayrollService.readData(IOService.DB_IO);
-			employeePayrollService.addEmployeeInDatabase(1, "Mark", "M", 3500000, LocalDate.now(), new int[] { 4 });
+			employeePayrollService.addEmployeeInDatabase(1, "Mark", 'M', 3500000, LocalDate.now(),
+					Arrays.asList(new Integer[] { 4 }));
 		} catch (DataBaseSQLException e) {
 			e.printStackTrace();
 			fail();
@@ -107,7 +111,8 @@ public class DataBaseServiceTests {
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		try {
 			employeePayrollService.readData(IOService.DB_IO);
-			employeePayrollService.addEmployeeInDatabase(1, "Mina", "F", 5500000, LocalDate.now(), new int[] { 1, 2 });
+			employeePayrollService.addEmployeeInDatabase(1, "Mina", 'F', 5500000, LocalDate.now(),
+					Arrays.asList(new Integer[] { 1, 2 }));
 		} catch (DataBaseSQLException e) {
 			e.printStackTrace();
 			fail();
@@ -121,7 +126,7 @@ public class DataBaseServiceTests {
 	}
 
 	@Test
-	public void givenEmployeePayrollDataBase_whenDeletedEmployeeAndUpdatedAllTables_should() {
+	public void givenEmployeePayrollDataBase_whenDeletedEmployeeAndUpdatedAllTables_shouldReturnSize() {
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		try {
 			employeePayrollService.readData(IOService.DB_IO);
@@ -132,6 +137,29 @@ public class DataBaseServiceTests {
 		}
 		System.out.println(employeePayrollService.employeePayrollList);
 		Assert.assertEquals(4, employeePayrollService.employeePayrollList.size());
+	}
+
+	@Test
+	public void givenEmployeePayrollDatabase_whenAddedListOfEmployee_shouldReturnNoOfEntries()
+			throws DataBaseSQLException {
+		EmployeePayrollData[] empArr = new EmployeePayrollData[] {
+				new EmployeePayrollData("Capgemini", "Ratan", 5500000, LocalDate.now(), 'M',
+						Arrays.asList(new Integer[] { 1, 2 })),
+				new EmployeePayrollData("Capgemini", "Rinki", 1500000, LocalDate.now(), 'M',
+						Arrays.asList(new Integer[] { 2 })),
+				new EmployeePayrollData("Capgemini", "Alok", 5000000, LocalDate.now(), 'M',
+						Arrays.asList(new Integer[] { 3 })),
+				new EmployeePayrollData("Capgemini", "Fatima", 5300000, LocalDate.now(), 'F',
+						Arrays.asList(new Integer[] { 1, 4 })),
+				new EmployeePayrollData("Capgemini", "Raja", 5800000, LocalDate.now(), 'F',
+						Arrays.asList(new Integer[] { 4 })) };
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		employeePayrollService.readData(IOService.DB_IO);
+		Instant start = Instant.now();
+		employeePayrollService.addListOfEmployee(Arrays.asList(empArr));
+		Instant end = Instant.now();
+		System.out.println("Duration Without Thread :" + Duration.between(start, end));
+		Assert.assertEquals(9, employeePayrollService.employeePayrollList.size());
 	}
 
 }
