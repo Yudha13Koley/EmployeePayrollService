@@ -159,7 +159,14 @@ public class DataBaseServiceTests {
 		employeePayrollService.addListOfEmployee(Arrays.asList(empArr));
 		Instant end = Instant.now();
 		System.out.println("Duration Without Thread :" + Duration.between(start, end));
-		Assert.assertEquals(9, employeePayrollService.employeePayrollList.size());
+		Instant startWithThread = Instant.now();
+		employeePayrollService.addListOfEmployeeWithThreads(Arrays.asList(empArr));
+		Instant endWithThread = Instant.now();
+		System.out.println("Duration With Thread :" + Duration.between(startWithThread, endWithThread));
+		for(EmployeePayrollData emp:employeePayrollService.employeePayrollList) {
+			System.out.println(emp);
+		}
+		Assert.assertEquals(14, employeePayrollService.employeePayrollList.size());
 	}
 
 }

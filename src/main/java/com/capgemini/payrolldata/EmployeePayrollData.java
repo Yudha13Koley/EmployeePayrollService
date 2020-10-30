@@ -96,6 +96,23 @@ public class EmployeePayrollData {
 	}
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((address == null) ? 0 : address.hashCode());
+		result = prime * result + ((company_name == null) ? 0 : company_name.hashCode());
+		result = prime * result + ((department_ids == null) ? 0 : department_ids.hashCode());
+		result = prime * result + gender;
+		result = prime * result + id;
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(salary);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((startDate == null) ? 0 : startDate.hashCode());
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -104,6 +121,21 @@ public class EmployeePayrollData {
 		if (getClass() != obj.getClass())
 			return false;
 		EmployeePayrollData other = (EmployeePayrollData) obj;
+		if (address == null) {
+			if (other.address != null)
+				return false;
+		} else if (!address.equals(other.address))
+			return false;
+		if (company_name == null) {
+			if (other.company_name != null)
+				return false;
+		} else if (!company_name.equals(other.company_name))
+			return false;
+		if (department_ids == null) {
+			if (other.department_ids != null)
+				return false;
+		} else if (!department_ids.equals(other.department_ids))
+			return false;
 		if (gender != other.gender)
 			return false;
 		if (id != other.id)
