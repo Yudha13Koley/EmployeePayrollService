@@ -108,14 +108,6 @@ public class EmployeePayrollService {
 		this.employeePayrollList = employeePayrollDBService.readDataForJoiningDates();
 	}
 
-	/*
-	 * public boolean modifyDatabase() throws DataBaseSQLException { return
-	 * employeePayrollDBService.addColumnInDatabase(); }
-	 * 
-	 * public boolean updateGenderColumn() throws DataBaseSQLException { return
-	 * employeePayrollDBService.updateGender(); }
-	 */
-
 	public Map<Character, Double> readAVGSalaries() throws DataBaseSQLException {
 		return employeePayrollDBService.readAVGSalariesByGender();
 	}
@@ -177,4 +169,38 @@ public class EmployeePayrollService {
 		System.out.println(employeePayrollList);
 	}
 
+	public boolean updateSalaryOfListOfEmployee(List<EmployeePayrollData> empList) {
+		Map<Integer, Boolean> employeeAdditionalStatus = new HashMap<>();
+		Map<Integer, Boolean> employeeisSyncStatus = new HashMap<>();
+		empList.forEach(emp -> {
+			Runnable task = () -> {
+				employeeAdditionalStatus.put(emp.hashCode(), false);
+				System.out.println("Employee Being Updated : " + Thread.currentThread().getName());
+				this.updateSalaryOfAnEmployeeInDB(emp.getName(), emp.getSalary());
+				employeeAdditionalStatus.put(emp.hashCode(), true);
+				System.out.println("Employee Updated : " + Thread.currentThread().getName());
+				try {
+					employeeisSyncStatus.put(emp.hashCode(), isEmployeeSyncWithDatabase(emp.getName()));
+				} catch (DataBaseSQLException e) {
+					e.printStackTrace();
+				}
+			};
+			Thread thread = new Thread(task, emp.getName());
+			thread.start();
+		});
+		while (employeeAdditionalStatus.containsValue(false)) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		for (Map.Entry<Integer, Boolean> entry : employeeisSyncStatus.entrySet()) {
+			System.out.println(entry.getKey() + "  " + entry.getValue());
+		}
+		if (employeeisSyncStatus.containsValue(false))
+			return false;
+		else
+			return true;
+	}
 }

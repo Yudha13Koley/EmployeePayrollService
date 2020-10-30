@@ -1,5 +1,7 @@
 package com.capgemini.dbservicetests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.time.Duration;
@@ -43,7 +45,7 @@ public class DataBaseServiceTests {
 			e.printStackTrace();
 			fail();
 		}
-		employeePayrollService.updateSalaryOfAnEmployeeInDB("Rita", 7000000.00);
+		employeePayrollService.updateSalaryOfAnEmployeeInDB("Rita", 7800000.00);
 		boolean result = false;
 		try {
 			result = employeePayrollService.isEmployeeSyncWithDatabase("Rita");
@@ -155,10 +157,12 @@ public class DataBaseServiceTests {
 						Arrays.asList(new Integer[] { 4 })) };
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		employeePayrollService.readData(IOService.DB_IO);
-		Instant start = Instant.now();
-		employeePayrollService.addListOfEmployee(Arrays.asList(empArr));
-		Instant end = Instant.now();
-		System.out.println("Duration Without Thread :" + Duration.between(start, end));
+		/*
+		 * Instant start = Instant.now();
+		 * employeePayrollService.addListOfEmployee(Arrays.asList(empArr)); Instant end
+		 * = Instant.now(); System.out.println("Duration Without Thread :" +
+		 * Duration.between(start, end));
+		 */
 		Instant startWithThread = Instant.now();
 		employeePayrollService.addListOfEmployeeWithThreads(Arrays.asList(empArr));
 		Instant endWithThread = Instant.now();
@@ -169,4 +173,18 @@ public class DataBaseServiceTests {
 		Assert.assertEquals(14, employeePayrollService.employeePayrollList.size());
 	}
 
+	@Test
+	public void givenEmployeePayrollDatabase_whenUpdatedAListOfEmployee_shouldcheckisSyncWithDatabase()
+			throws DataBaseSQLException {
+		EmployeePayrollData[] empArr = new EmployeePayrollData[] { new EmployeePayrollData(0, "Ratan", 5000000),
+				new EmployeePayrollData(0, "Rinki", 5500000), new EmployeePayrollData(0, "Alok", 6000000),
+				new EmployeePayrollData(0, "Fatima", 6500000), new EmployeePayrollData(0, "Raja", 8000000) };
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		employeePayrollService.readData(IOService.DB_IO);
+		Instant startWithThread = Instant.now();
+		boolean b = employeePayrollService.updateSalaryOfListOfEmployee(Arrays.asList(empArr));
+		Instant endWithThread = Instant.now();
+		System.out.println("Duration With Thread :" + Duration.between(startWithThread, endWithThread));
+		Assert.assertEquals(true, b);
+	}
 }

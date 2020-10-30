@@ -99,8 +99,15 @@ public class EmployeePayrollDBService {
 	}
 
 	public int setSalaryOfEmployee(String name, double salary) throws DataBaseSQLException {
-		String sql = String.format("UPDATE employee_payroll SET basic_pay=%.2f WHERE employee_id="
-				+ "(SELECT employee_id FROM employee_details WHERE name='%s');", salary, name);
+		double deductions = 0.2 * salary;
+		double taxable_pay = salary - deductions;
+		double tax = 0.1 * taxable_pay;
+		double net_pay = taxable_pay - tax;
+		String sql = String.format(
+				"UPDATE employee_payroll SET "
+						+ "basic_pay=%.2f,deductions=%.2f,taxable_pay=%.2f,tax=%.2f,net_pay=%.2f "
+						+ "WHERE employee_id= (SELECT employee_id FROM employee_details WHERE name='%s');",
+				salary, deductions, taxable_pay, tax, net_pay, name);
 		try {
 			int n = getPrepareStatementInstance(sql).executeUpdate();
 			preparedStatement.close();
