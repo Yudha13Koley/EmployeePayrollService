@@ -18,6 +18,7 @@ import com.capgemini.exceptions.DataBaseSQLException;
 import com.capgemini.payrolldata.EmployeePayrollData;
 
 public class EmployeePayrollDBService {
+	private int connectionCounter = 0;
 	private PreparedStatement preparedStatement;
 	private static EmployeePayrollDBService empployeePayrollDBService;
 
@@ -42,13 +43,16 @@ public class EmployeePayrollDBService {
 	}
 
 	private synchronized Connection getConnection() throws SQLException {
+		connectionCounter++;
 		String jdbcUrl = "jdbc:mysql://localhost:3306/payroll_service";
 		String userName = "root";
 		String passWord = "Yudha@123";
 		Connection conn = null;
-		System.out.println("Conneting With Database : " + conn);
+		System.out.println("Processing Thread : " + Thread.currentThread().getName()
+				+ " Connecting to Database with id : " + connectionCounter);
 		conn = DriverManager.getConnection(jdbcUrl, userName, passWord);
-		System.out.println("Connection is Successful : " + conn);
+		System.out.println("Processing Thread : " + Thread.currentThread().getName() + " ID is " + connectionCounter
+				+ "Connecting is successful : " + conn);
 		return conn;
 	}
 
@@ -113,24 +117,6 @@ public class EmployeePayrollDBService {
 				+ "AND a.start BETWEEN CAST('2020-01-01' AS DATE) AND DATE(NOW()) GROUP BY a.employee_id ; ";
 		return readDataForASQL(sql);
 	}
-
-	/*
-	 * public boolean addColumnInDatabase() throws DataBaseSQLException { String sql
-	 * =
-	 * "ALTER TABLE employee_payroll ADD gender CHAR(1) CHECK (gender='M' OR gender='F') AFTER name;"
-	 * ; return executeSql(sql); }
-	 * 
-	 * public boolean updateGender() throws DataBaseSQLException { String sql =
-	 * "UPDATE employee_payroll SET gender='M' WHERE name='Bill' or name='Charlie' ;"
-	 * ; boolean result = executeSql(sql); String sql2 =
-	 * "UPDATE employee_payroll SET gender='F' WHERE name='Terisa' ;"; boolean
-	 * result2 = executeSql(sql2); return result && result2; }
-	 * 
-	 * private boolean executeSql(String sql) throws DataBaseSQLException { try {
-	 * getPrepareStatementInstance(sql).execute(); preparedStatement.close(); return
-	 * true; } catch (SQLException e) { throw new
-	 * DataBaseSQLException(e.getMessage()); } }
-	 */
 
 	public EmployeePayrollData getEmployeeFromDatabase(String name) throws DataBaseSQLException {
 		String sql = String.format(
