@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,6 @@ import com.capgemini.exceptions.DataBaseSQLException;
 import com.capgemini.payrolldata.EmployeePayrollData;
 
 public class EmployeePayrollDBService {
-
 	private PreparedStatement preparedStatement;
 	private static EmployeePayrollDBService empployeePayrollDBService;
 
@@ -41,14 +41,14 @@ public class EmployeePayrollDBService {
 		}
 	}
 
-	private Connection getConnection() throws SQLException {
+	private synchronized Connection getConnection() throws SQLException {
 		String jdbcUrl = "jdbc:mysql://localhost:3306/payroll_service";
 		String userName = "root";
 		String passWord = "Yudha@123";
-		Connection conn;
-		System.out.println("Connecting to Database : " + jdbcUrl);
+		Connection conn = null;
+		System.out.println("Conneting With Database : " + conn);
 		conn = DriverManager.getConnection(jdbcUrl, userName, passWord);
-		System.out.println("Connection is successful : " + conn);
+		System.out.println("Connection is Successful : " + conn);
 		return conn;
 	}
 
@@ -181,14 +181,15 @@ public class EmployeePayrollDBService {
 				name, gender, Date.valueOf(start));
 		EmployeePayrollData empData = null;
 		Connection connection = null;
+		Statement statement = null;
 		int employee_id = -1;
 		try {
 			connection = this.getConnection();
 			connection.setAutoCommit(false);
-			preparedStatement = connection.prepareStatement(sql);
-			int rowAffected = preparedStatement.executeUpdate(sql, preparedStatement.RETURN_GENERATED_KEYS);
+			statement = connection.createStatement();
+			int rowAffected = statement.executeUpdate(sql, preparedStatement.RETURN_GENERATED_KEYS);
 			if (rowAffected == 1) {
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				ResultSet resultSet = statement.getGeneratedKeys();
 				if (resultSet.next()) {
 					employee_id = resultSet.getInt(1);
 				}
@@ -211,10 +212,9 @@ public class EmployeePayrollDBService {
 						+ "VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f) ;",
 				employee_id, salary, deductions, taxable_pay, tax, net_pay);
 		try {
-			int rowAffected = preparedStatement.executeUpdate(sqlToAddPayrollDetails,
-					preparedStatement.RETURN_GENERATED_KEYS);
+			int rowAffected = statement.executeUpdate(sqlToAddPayrollDetails, preparedStatement.RETURN_GENERATED_KEYS);
 			if (rowAffected == 1) {
-				ResultSet resultSet = preparedStatement.getGeneratedKeys();
+				ResultSet resultSet = statement.getGeneratedKeys();
 				if (resultSet.next()) {
 					employee_id = resultSet.getInt(1);
 				}
@@ -232,10 +232,9 @@ public class EmployeePayrollDBService {
 					"INSERT INTO employee_department(employee_id,department_id) " + "VALUES (%d,%d) ;", employee_id,
 					department_id);
 			try {
-				int rowAffected = preparedStatement.executeUpdate(sqlToAddDepartment,
-						preparedStatement.RETURN_GENERATED_KEYS);
+				int rowAffected = statement.executeUpdate(sqlToAddDepartment, statement.RETURN_GENERATED_KEYS);
 				if (rowAffected == 1) {
-					ResultSet resultSet = preparedStatement.getGeneratedKeys();
+					ResultSet resultSet = statement.getGeneratedKeys();
 					if (resultSet.next()) {
 						employee_id = resultSet.getInt(1);
 					}

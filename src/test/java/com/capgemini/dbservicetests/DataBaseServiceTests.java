@@ -163,7 +163,7 @@ public class DataBaseServiceTests {
 		employeePayrollService.addListOfEmployeeWithThreads(Arrays.asList(empArr));
 		Instant endWithThread = Instant.now();
 		System.out.println("Duration With Thread :" + Duration.between(startWithThread, endWithThread));
-		for(EmployeePayrollData emp:employeePayrollService.employeePayrollList) {
+		for (EmployeePayrollData emp : employeePayrollService.employeePayrollList) {
 			System.out.println(emp);
 		}
 		Assert.assertEquals(14, employeePayrollService.employeePayrollList.size());
