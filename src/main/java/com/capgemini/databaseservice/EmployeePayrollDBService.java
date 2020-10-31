@@ -109,8 +109,10 @@ public class EmployeePayrollDBService {
 						+ "WHERE employee_id= (SELECT employee_id FROM employee_details WHERE name='%s');",
 				salary, deductions, taxable_pay, tax, net_pay, name);
 		try {
-			int n = getPrepareStatementInstance(sql).executeUpdate();
-			preparedStatement.close();
+			Connection connection = getConnection();
+			Statement statement = connection.createStatement();
+			int n = statement.executeUpdate(sql);
+			connection.close();
 			return n;
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
@@ -133,18 +135,14 @@ public class EmployeePayrollDBService {
 						+ " GROUP BY a.employee_id;",
 				name);
 		List<EmployeePayrollData> empList = new LinkedList<>();
-		preparedStatement = getPrepareStatementInstance(sql);
 		try {
-			ResultSet resultset = preparedStatement.executeQuery();
+			Connection connection = getConnection();
+			Statement statement = connection.createStatement();
+			ResultSet resultset = statement.executeQuery(sql);
 			empList = getListOfEntries(resultset, empList);
+			connection.close();
 		} catch (SQLException e) {
 			throw new DataBaseSQLException(e.getMessage());
-		} finally {
-			try {
-				preparedStatement.close();
-			} catch (SQLException e) {
-				throw new DataBaseSQLException(e.getMessage());
-			}
 		}
 		return empList.get(0);
 	}
@@ -174,20 +172,19 @@ public class EmployeePayrollDBService {
 				name, gender, Date.valueOf(start));
 		EmployeePayrollData empData = null;
 		Connection connection = null;
-		Statement statement = null;
-		int employee_id = -1;
 		try {
 			connection = this.getConnection();
 			connection.setAutoCommit(false);
-			statement = connection.createStatement();
-			int rowAffected = statement.executeUpdate(sql, preparedStatement.RETURN_GENERATED_KEYS);
-			if (rowAffected == 1) {
-				ResultSet resultSet = statement.getGeneratedKeys();
-				if (resultSet.next()) {
-					employee_id = resultSet.getInt(1);
-				}
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+		}
+		int employee_id = -1;
+		try {
+			ResultSet resultSet = getResultSetForSql(sql, connection);
+			if (resultSet.next()) {
+				employee_id = resultSet.getInt(1);
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
@@ -199,20 +196,13 @@ public class EmployeePayrollDBService {
 		double taxable_pay = salary - deductions;
 		double tax = 0.1 * taxable_pay;
 		double net_pay = taxable_pay - tax;
-
 		String sqlToAddPayrollDetails = String.format(
 				"INSERT INTO employee_payroll (employee_id,basic_pay,deductions,taxable_pay,tax,net_pay)"
 						+ "VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f) ;",
 				employee_id, salary, deductions, taxable_pay, tax, net_pay);
 		try {
-			int rowAffected = statement.executeUpdate(sqlToAddPayrollDetails, preparedStatement.RETURN_GENERATED_KEYS);
-			if (rowAffected == 1) {
-				ResultSet resultSet = statement.getGeneratedKeys();
-				if (resultSet.next()) {
-					employee_id = resultSet.getInt(1);
-				}
-			}
-		} catch (SQLException e) {
+			getResultSetForSql(sqlToAddPayrollDetails, connection);
+		} catch (DataBaseSQLException e) {
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
@@ -225,14 +215,8 @@ public class EmployeePayrollDBService {
 					"INSERT INTO employee_department(employee_id,department_id) " + "VALUES (%d,%d) ;", employee_id,
 					department_id);
 			try {
-				int rowAffected = statement.executeUpdate(sqlToAddDepartment, statement.RETURN_GENERATED_KEYS);
-				if (rowAffected == 1) {
-					ResultSet resultSet = statement.getGeneratedKeys();
-					if (resultSet.next()) {
-						employee_id = resultSet.getInt(1);
-					}
-				}
-			} catch (SQLException e) {
+				getResultSetForSql(sqlToAddDepartment, connection);
+			} catch (DataBaseSQLException e) {
 				try {
 					connection.rollback();
 				} catch (SQLException e1) {
@@ -255,6 +239,19 @@ public class EmployeePayrollDBService {
 			}
 		}
 		return empData;
+	}
+
+	private synchronized ResultSet getResultSetForSql(String sql, Connection connection) throws DataBaseSQLException {
+		try {
+			preparedStatement = connection.prepareStatement(sql, preparedStatement.RETURN_GENERATED_KEYS);
+			int rowAffected = preparedStatement.executeUpdate();
+			if (rowAffected == 1) {
+				return preparedStatement.getGeneratedKeys();
+			}
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		}
+		return null;
 	}
 
 	public boolean deleteEmployee(String name) throws DataBaseSQLException {

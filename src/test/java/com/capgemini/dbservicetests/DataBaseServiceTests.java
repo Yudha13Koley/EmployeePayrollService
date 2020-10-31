@@ -1,7 +1,5 @@
 package com.capgemini.dbservicetests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.time.Duration;
@@ -157,12 +155,10 @@ public class DataBaseServiceTests {
 						Arrays.asList(new Integer[] { 4 })) };
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		employeePayrollService.readData(IOService.DB_IO);
-		/*
-		 * Instant start = Instant.now();
-		 * employeePayrollService.addListOfEmployee(Arrays.asList(empArr)); Instant end
-		 * = Instant.now(); System.out.println("Duration Without Thread :" +
-		 * Duration.between(start, end));
-		 */
+		Instant start = Instant.now();
+		employeePayrollService.addListOfEmployee(Arrays.asList(empArr));
+		Instant end = Instant.now();
+		System.out.println("Duration Without Thread :" + Duration.between(start, end));
 		Instant startWithThread = Instant.now();
 		employeePayrollService.addListOfEmployeeWithThreads(Arrays.asList(empArr));
 		Instant endWithThread = Instant.now();
@@ -177,8 +173,8 @@ public class DataBaseServiceTests {
 	public void givenEmployeePayrollDatabase_whenUpdatedAListOfEmployee_shouldcheckisSyncWithDatabase()
 			throws DataBaseSQLException {
 		EmployeePayrollData[] empArr = new EmployeePayrollData[] { new EmployeePayrollData(0, "Ratan", 5000000),
-				new EmployeePayrollData(0, "Rinki", 5500000), new EmployeePayrollData(0, "Alok", 6000000),
-				new EmployeePayrollData(0, "Fatima", 6500000), new EmployeePayrollData(0, "Raja", 8000000) };
+				new EmployeePayrollData(0, "Rinki", 5100000), new EmployeePayrollData(0, "Alok", 5200000),
+				new EmployeePayrollData(0, "Fatima", 5300000), new EmployeePayrollData(0, "Raja", 5400000) };
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		employeePayrollService.readData(IOService.DB_IO);
 		Instant startWithThread = Instant.now();
