@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -171,48 +172,61 @@ public class EmployeePayrollDBService {
 				"INSERT INTO employee_details (company_id,name,gender,start) VALUES (%d,'%s','%s','%s'); ", company_id,
 				name, gender, Date.valueOf(start));
 		EmployeePayrollData empData = null;
-		Connection connection = null;
+		Connection[] connection = new Connection[] { null };
 		try {
-			connection = this.getConnection();
-			connection.setAutoCommit(false);
+			connection[0] = this.getConnection();
+			connection[0].setAutoCommit(false);
 		} catch (SQLException e2) {
 			e2.printStackTrace();
 		}
-		int employee_id = -1;
-		try {
-			ResultSet resultSet = getResultSetForSql(sql, connection);
-			if (resultSet.next()) {
-				employee_id = resultSet.getInt(1);
-			}
-		} catch (Exception e) {
+		Integer[] employee_id = new Integer[] { -1 };
+		boolean[] status = { false, false };
+		synchronized (this) {
+			employee_id[0] = this.insertEmployeeInDatabaseAndGetId(sql, connection[0]);
+
+			Runnable task1 = () -> {
+				this.insertPayrollDetailsForAID(employee_id[0], salary, connection[0]);
+				status[0] = true;
+			};
+			Thread thread1 = new Thread(task1);
+			thread1.start();
+
+			Runnable task2 = () -> {
+				this.addEmployeeDepartmentDetailsInDatabase(employee_id[0], department_ids, connection[0]);
+				status[1] = true;
+			};
+			Thread thread2 = new Thread(task2);
+			thread2.start();
+		}
+		while (!(status[0] == true && status[1] == true)) {
 			try {
-				connection.rollback();
-			} catch (SQLException e1) {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		empData = new EmployeePayrollData(employee_id[0], "Capgemini", name, "TBD", salary, start, gender,
+				department_ids);
+		try {
+			connection[0].commit();
+		} catch (SQLException e) {
+			throw new DataBaseSQLException(e.getMessage());
+		} finally {
+			try {
+				if (connection != null)
+					connection[0].close();
+			} catch (SQLException e) {
 				throw new DataBaseSQLException(e.getMessage());
 			}
-			throw new DataBaseSQLException(e.getMessage());
 		}
-		double deductions = 0.2 * salary;
-		double taxable_pay = salary - deductions;
-		double tax = 0.1 * taxable_pay;
-		double net_pay = taxable_pay - tax;
-		String sqlToAddPayrollDetails = String.format(
-				"INSERT INTO employee_payroll (employee_id,basic_pay,deductions,taxable_pay,tax,net_pay)"
-						+ "VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f) ;",
-				employee_id, salary, deductions, taxable_pay, tax, net_pay);
-		try {
-			getResultSetForSql(sqlToAddPayrollDetails, connection);
-		} catch (DataBaseSQLException e) {
-			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				throw new DataBaseSQLException(e.getMessage());
-			}
-			throw new DataBaseSQLException(e.getMessage());
-		}
+		return empData;
+	}
+
+	private void addEmployeeDepartmentDetailsInDatabase(Integer id, List<Integer> department_ids,
+			Connection connection) {
 		for (int department_id : department_ids) {
 			String sqlToAddDepartment = String.format(
-					"INSERT INTO employee_department(employee_id,department_id) " + "VALUES (%d,%d) ;", employee_id,
+					"INSERT INTO employee_department(employee_id,department_id) " + "VALUES (%d,%d) ;", id,
 					department_id);
 			try {
 				getResultSetForSql(sqlToAddDepartment, connection);
@@ -220,25 +234,46 @@ public class EmployeePayrollDBService {
 				try {
 					connection.rollback();
 				} catch (SQLException e1) {
-					throw new DataBaseSQLException(e.getMessage());
+					e.printStackTrace();
 				}
-				throw new DataBaseSQLException(e.getMessage());
+				e.printStackTrace();
 			}
 		}
-		empData = new EmployeePayrollData(employee_id, "Capgemini", name, "TBD", salary, start, gender, department_ids);
+
+	}
+
+	private void insertPayrollDetailsForAID(Integer id, double salary, Connection connection) {
+		double deductions = 0.2 * salary;
+		double taxable_pay = salary - deductions;
+		double tax = 0.1 * taxable_pay;
+		double net_pay = taxable_pay - tax;
+		String sqlToAddPayrollDetails = String
+				.format("INSERT INTO employee_payroll (employee_id,basic_pay,deductions,taxable_pay,tax,net_pay)"
+						+ "VALUES (%d,%.2f,%.2f,%.2f,%.2f,%.2f) ;", id, salary, deductions, taxable_pay, tax, net_pay);
 		try {
-			connection.commit();
-		} catch (SQLException e) {
-			throw new DataBaseSQLException(e.getMessage());
-		} finally {
+			getResultSetForSql(sqlToAddPayrollDetails, connection);
+		} catch (DataBaseSQLException e) {
 			try {
-				if (connection != null)
-					connection.close();
-			} catch (SQLException e) {
-				throw new DataBaseSQLException(e.getMessage());
+				connection.rollback();
+			} catch (SQLException e1) {
+				e.printStackTrace();
 			}
+			e.printStackTrace();
 		}
-		return empData;
+
+	}
+
+	private Integer insertEmployeeInDatabaseAndGetId(String sql, Connection connection) {
+		ResultSet resultSet;
+		try {
+			resultSet = getResultSetForSql(sql, connection);
+			if (resultSet.next()) {
+				return resultSet.getInt(1);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	private synchronized ResultSet getResultSetForSql(String sql, Connection connection) throws DataBaseSQLException {
