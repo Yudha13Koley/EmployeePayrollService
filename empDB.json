@@ -113,21 +113,6 @@
       ]
     },
     {
-      "id": 15,
-      "company_name": "Capgemini",
-      "name": "Alok",
-      "gender": "M",
-      "salary": 3000000,
-      "startDate": {
-        "year": 2020,
-        "month": 11,
-        "day": 2
-      },
-      "department_ids": [
-        3
-      ]
-    },
-    {
       "id": 16,
       "company_name": "Capgemini",
       "name": "Rinki",

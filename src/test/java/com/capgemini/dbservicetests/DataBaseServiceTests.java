@@ -139,7 +139,7 @@ public class DataBaseServiceTests {
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
 		try {
 			employeePayrollService.readData(IOService.DB_IO);
-			employeePayrollService.deleteEmployeeInDatabase("Mina");
+			employeePayrollService.deleteEmployeeInDatabase("Mina", IOService.DB_IO);
 		} catch (DataBaseSQLException e) {
 			e.printStackTrace();
 			fail();
@@ -277,6 +277,23 @@ public class DataBaseServiceTests {
 			return false;
 	}
 
+	private boolean deleteEmployeeFromJsonServer(String name, EmployeePayrollService employeePayrollService) {
+		EmployeePayrollData empData = employeePayrollService.getEmployee(employeePayrollService.employeePayrollList,
+				name);
+		RequestSpecification request = RestAssured.given();
+		request.header("Content-type", "application/json");
+		Response response = request.delete("/employee_details/" + empData.getId());
+		try {
+			employeePayrollService.deleteEmployeeInDatabase(name, IOService.REST_IO);
+		} catch (DataBaseSQLException e) {
+			e.printStackTrace();
+		}
+		if (response.getStatusCode() == 200)
+			return true;
+		else
+			return false;
+	}
+
 	@Test
 	public void givenEmployeeDetailsInJsonServer_whenRetrieved_shouldReturnNoOfCounts() {
 		EmployeePayrollData[] empData = getEmployee();
@@ -327,6 +344,15 @@ public class DataBaseServiceTests {
 		EmployeePayrollData[] empData = getEmployee();
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService(Arrays.asList(empData));
 		boolean result = updateEmployeeSalaryJsonServer("Alok", 3000000, employeePayrollService);
+		Assert.assertEquals(true, result);
+		System.out.println(employeePayrollService.employeePayrollList);
+	}
+
+	@Test
+	public void givenEmployeeDetailsInJsonServer_whenDeletedEmployeeDetails_shouldMatchStatusCodeReturnsTrue() {
+		EmployeePayrollData[] empData = getEmployee();
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService(Arrays.asList(empData));
+		boolean result = deleteEmployeeFromJsonServer("Alok", employeePayrollService);
 		Assert.assertEquals(true, result);
 		System.out.println(employeePayrollService.employeePayrollList);
 	}
