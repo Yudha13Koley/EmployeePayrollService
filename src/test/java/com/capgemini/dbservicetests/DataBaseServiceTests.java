@@ -52,7 +52,7 @@ public class DataBaseServiceTests {
 			e.printStackTrace();
 			fail();
 		}
-		employeePayrollService.updateSalaryOfAnEmployeeInDB("Rita", 7800000.00);
+		employeePayrollService.updateSalaryOfAnEmployeeInDB("Rita", 7800000.00, IOService.DB_IO);
 		boolean result = false;
 		try {
 			result = employeePayrollService.isEmployeeSyncWithDatabase("Rita");
@@ -261,6 +261,22 @@ public class DataBaseServiceTests {
 			return false;
 	}
 
+	private boolean updateEmployeeSalaryJsonServer(String name, double salary,
+			EmployeePayrollService employeePayrollService) {
+		employeePayrollService.updateSalaryOfAnEmployeeInDB(name, salary, IOService.REST_IO);
+		EmployeePayrollData empData = employeePayrollService.getEmployee(employeePayrollService.employeePayrollList,
+				name);
+		String empJson = new Gson().toJson(empData);
+		RequestSpecification request = RestAssured.given();
+		request.header("Content-type", "application/json");
+		request.body(empJson);
+		Response response = request.put("/employee_details/" + empData.getId());
+		if (response.getStatusCode() == 200)
+			return true;
+		else
+			return false;
+	}
+
 	@Test
 	public void givenEmployeeDetailsInJsonServer_whenRetrieved_shouldReturnNoOfCounts() {
 		EmployeePayrollData[] empData = getEmployee();
@@ -270,7 +286,7 @@ public class DataBaseServiceTests {
 	}
 
 	@Test
-	public void givenEmployeeDetailsInJsonServer_whenAddedEnEmployee_shouldReturnNoOfCountsAndResponseCode() {
+	public void givenEmployeeDetailsInJsonServer_whenAddedAnEmployee_shouldReturnNoOfCountsAndResponseCode() {
 		EmployeePayrollData[] empData = getEmployee();
 		EmployeePayrollService employeePayrollService = new EmployeePayrollService(Arrays.asList(empData));
 		EmployeePayrollData newEmp = new EmployeePayrollData("Capgemini", "Ratan", 5500000, LocalDate.now(), 'M',
@@ -304,6 +320,15 @@ public class DataBaseServiceTests {
 		System.out.println(employeePayrollService.employeePayrollList);
 		long count = employeePayrollService.countEntries(IOService.CONSOLE_IO);
 		Assert.assertEquals(9, count);
+	}
+
+	@Test
+	public void givenEmployeeDetailsInJsonServer_whenUpdatedEmployeeDetails_shouldMatchStatusCodeReturnsTrue() {
+		EmployeePayrollData[] empData = getEmployee();
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService(Arrays.asList(empData));
+		boolean result = updateEmployeeSalaryJsonServer("Alok", 3000000, employeePayrollService);
+		Assert.assertEquals(true, result);
+		System.out.println(employeePayrollService.employeePayrollList);
 	}
 
 }

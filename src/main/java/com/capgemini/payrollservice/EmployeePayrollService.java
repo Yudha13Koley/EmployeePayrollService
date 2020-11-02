@@ -26,7 +26,7 @@ public class EmployeePayrollService {
 		this.employeePayrollList = new ArrayList<>(employeePayrollList);
 	}
 
-	private EmployeePayrollData getEmployee(List<EmployeePayrollData> list, String name) {
+	public EmployeePayrollData getEmployee(List<EmployeePayrollData> list, String name) {
 		return list.stream().filter(n -> n.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
 	}
 
@@ -80,18 +80,24 @@ public class EmployeePayrollService {
 
 	}
 
-	public void updateSalaryOfAnEmployeeInDB(String name, double salary) {
-		try {
-			int result = employeePayrollDBService.setSalaryOfEmployee(name, salary);
-			System.out.println("No of rows updated : " + result);
-		} catch (DataBaseSQLException e) {
-			e.printStackTrace();
+	public void updateSalaryOfAnEmployeeInDB(String name, double salary, IOService ioservice) {
+		if (ioservice.equals(IOService.DB_IO)) {
+			try {
+				int result = employeePayrollDBService.setSalaryOfEmployee(name, salary);
+				System.out.println("No of rows updated : " + result);
+			} catch (DataBaseSQLException e) {
+				e.printStackTrace();
+			}
+			EmployeePayrollData empData = this.getEmployee(this.employeePayrollList, name);
+			if (empData != null) {
+				empData.setSalary(salary);
+			}
+		} else {
+			EmployeePayrollData empData = this.getEmployee(this.employeePayrollList, name);
+			if (empData != null) {
+				empData.setSalary(salary);
+			}
 		}
-		EmployeePayrollData empData = this.getEmployee(this.employeePayrollList, name);
-		if (empData != null) {
-			empData.setSalary(salary);
-		}
-
 	}
 
 	public boolean isEmployeeSyncWithDatabase(String name) throws DataBaseSQLException {
@@ -178,7 +184,7 @@ public class EmployeePayrollService {
 			Runnable task = () -> {
 				employeeAdditionalStatus.put(emp.hashCode(), false);
 				System.out.println("Employee Being Updated : " + Thread.currentThread().getName());
-				this.updateSalaryOfAnEmployeeInDB(emp.getName(), emp.getSalary());
+				this.updateSalaryOfAnEmployeeInDB(emp.getName(), emp.getSalary(), IOService.DB_IO);
 				employeeAdditionalStatus.put(emp.hashCode(), true);
 				System.out.println("Employee Updated : " + Thread.currentThread().getName());
 				try {
