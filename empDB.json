@@ -1,0 +1,85 @@
+{
+  "employee_details": [
+    {
+      "id": 2,
+      "company_name": "Capgemini",
+      "name": "Ram",
+      "address": "TBD",
+      "gender": "M",
+      "salary": 6000000,
+      "startDate": {
+        "year": 2019,
+        "month": 3,
+        "day": 11
+      },
+      "department_ids": [
+        3
+      ]
+    },
+    {
+      "id": 3,
+      "company_name": "Capgemini",
+      "name": "Stuart",
+      "address": "TBD",
+      "gender": "M",
+      "salary": 5000000,
+      "startDate": {
+        "year": 2020,
+        "month": 3,
+        "day": 11
+      },
+      "department_ids": [
+        4
+      ]
+    },
+    {
+      "id": 5,
+      "company_name": "Capgemini",
+      "name": "Rita",
+      "address": "TBD",
+      "gender": "F",
+      "salary": 7800000,
+      "startDate": {
+        "year": 2020,
+        "month": 3,
+        "day": 6
+      },
+      "department_ids": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 11,
+      "company_name": "Capgemini",
+      "name": "Mark",
+      "address": "TBD",
+      "gender": "M",
+      "salary": 3500000,
+      "startDate": {
+        "year": 2020,
+        "month": 10,
+        "day": 28
+      },
+      "department_ids": [
+        4
+      ]
+    },
+    {
+      "id": 12,
+      "company_name": "Capgemini",
+      "name": "Ratan",
+      "gender": "M",
+      "salary": 5500000,
+      "startDate": {
+        "year": 2020,
+        "month": 11,
+        "day": 2
+      },
+      "department_ids": [
+        1,
+        2
+      ]
+    }
+  ]
+}

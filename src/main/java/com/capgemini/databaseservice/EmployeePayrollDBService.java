@@ -239,7 +239,6 @@ public class EmployeePayrollDBService {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	private void insertPayrollDetailsForAID(Integer id, double salary, Connection connection) {

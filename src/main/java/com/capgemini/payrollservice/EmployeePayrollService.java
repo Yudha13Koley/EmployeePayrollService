@@ -23,7 +23,7 @@ public class EmployeePayrollService {
 
 	public EmployeePayrollService(List<EmployeePayrollData> employeePayrollList) {
 		this();
-		this.employeePayrollList = employeePayrollList;
+		this.employeePayrollList = new ArrayList<>(employeePayrollList);
 	}
 
 	private EmployeePayrollData getEmployee(List<EmployeePayrollData> list, String name) {
@@ -144,8 +144,10 @@ public class EmployeePayrollService {
 	public void addListOfEmployeeWithThreads(List<EmployeePayrollData> empList) {
 		Map<Integer, Boolean> employeeAdditionalStatus = new HashMap<>();
 		empList.forEach(emp -> {
+			employeeAdditionalStatus.put(emp.hashCode(), false);
+		});
+		empList.forEach(emp -> {
 			Runnable task = () -> {
-				employeeAdditionalStatus.put(emp.hashCode(), false);
 				System.out.println("Employee Being Added : " + Thread.currentThread().getName());
 				try {
 					this.addEmployeeInDatabase(1, emp.getName(), emp.getGender(), emp.getSalary(), emp.getStartDate(),

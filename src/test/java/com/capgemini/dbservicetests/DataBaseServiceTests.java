@@ -2,6 +2,8 @@ package com.capgemini.dbservicetests;
 
 import static org.junit.Assert.fail;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -11,12 +13,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.capgemini.exceptions.DataBaseSQLException;
 import com.capgemini.payrolldata.EmployeePayrollData;
 import com.capgemini.payrollservice.EmployeePayrollService;
 import com.capgemini.payrollservice.EmployeePayrollService.IOService;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 
 public class DataBaseServiceTests {
 
@@ -183,4 +192,65 @@ public class DataBaseServiceTests {
 		System.out.println("Duration With Thread :" + Duration.between(startWithThread, endWithThread));
 		Assert.assertEquals(true, b);
 	}
+
+	@Test
+	public void givenEmployeePayrollDatabase_whenRetrievedData_givesDBJsonFiles() throws DataBaseSQLException {
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService();
+		employeePayrollService.readData(IOService.DB_IO);
+		try {
+			FileWriter writer = new FileWriter("./empDB.json");
+			Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			String str = gson.toJson(employeePayrollService.employeePayrollList);
+			writer.write(str);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Before
+	public void setup() {
+		RestAssured.baseURI = "http://localhost";
+		RestAssured.port = 3000;
+	}
+
+	public EmployeePayrollData[] getEmployee() {
+		Response response = RestAssured.get("/employee_details");
+		System.out.println("Employee Payroll entries in Json Server : \n" + response.asString());
+		EmployeePayrollData[] empdata = new Gson().fromJson(response.asString(), EmployeePayrollData[].class);
+		return empdata;
+	}
+
+	private Response addEmployeeToJsonServer(EmployeePayrollData newEmp) {
+		String empJson = new GsonBuilder().setPrettyPrinting().create().toJson(newEmp);
+		RequestSpecification request = RestAssured.given();
+		request.header("Content-type", "application/json");
+		request.body(empJson);
+		return request.post("/employee_details");
+	}
+
+	@Test
+	public void givenEmployeeDetailsInJsonServer_whenRetrieved_shouldReturnNoOfCounts() {
+		EmployeePayrollData[] empData = getEmployee();
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService(Arrays.asList(empData));
+		long entries = employeePayrollService.countEntries(IOService.CONSOLE_IO);
+		Assert.assertEquals(4, entries);
+	}
+
+	@Test
+	public void givenEmployeeDetailsInJsonServer_whenAddedEnEmployee_shouldReturnNoOfCountsAndResponseCode() {
+		EmployeePayrollData[] empData = getEmployee();
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService(Arrays.asList(empData));
+		EmployeePayrollData newEmp = new EmployeePayrollData("Capgemini", "Ratan", 5500000, LocalDate.now(), 'M',
+				Arrays.asList(new Integer[] { 1, 2 }));
+		Response response = addEmployeeToJsonServer(newEmp);
+		int statusCode = response.getStatusCode();
+		Assert.assertEquals(201, statusCode);
+		EmployeePayrollData empDataFromResponse = new Gson().fromJson(response.asString(), EmployeePayrollData.class);
+		employeePayrollService.employeePayrollList.add(empDataFromResponse);
+		System.out.println(employeePayrollService.employeePayrollList);
+		long count = employeePayrollService.countEntries(IOService.CONSOLE_IO);
+		Assert.assertEquals(5, count);
+	}
+
 }
