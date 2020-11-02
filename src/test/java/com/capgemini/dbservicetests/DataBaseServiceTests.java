@@ -229,6 +229,38 @@ public class DataBaseServiceTests {
 		return request.post("/employee_details");
 	}
 
+	private boolean addMultipleEmployeeToJsonServer(List<EmployeePayrollData> empList,
+			List<EmployeePayrollData> empListInService) {
+		Map<Integer, Boolean> empAddStatus = new HashMap<>();
+		empList.forEach(emp -> {
+			empAddStatus.put(emp.hashCode(), false);
+		});
+		empList.forEach(emp -> {
+			Runnable task = () -> {
+				Response response = addEmployeeToJsonServer(emp);
+				int statusCode = response.getStatusCode();
+				System.out.println("Employee Added : " + emp.getName() + " Status Code : " + statusCode);
+				empAddStatus.put(emp.hashCode(), true);
+				EmployeePayrollData empDataFromResponse = new Gson().fromJson(response.asString(),
+						EmployeePayrollData.class);
+				empListInService.add(empDataFromResponse);
+			};
+			Thread thread = new Thread(task);
+			thread.start();
+		});
+		while (empAddStatus.containsValue(false)) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		if (!empAddStatus.containsValue(false))
+			return true;
+		else
+			return false;
+	}
+
 	@Test
 	public void givenEmployeeDetailsInJsonServer_whenRetrieved_shouldReturnNoOfCounts() {
 		EmployeePayrollData[] empData = getEmployee();
@@ -251,6 +283,27 @@ public class DataBaseServiceTests {
 		System.out.println(employeePayrollService.employeePayrollList);
 		long count = employeePayrollService.countEntries(IOService.CONSOLE_IO);
 		Assert.assertEquals(5, count);
+	}
+
+	@Test
+	public void givenEmployeeDetailsInJsonServer_whenAddedMultipleEmployeeWithThreads_shouldReturnNoOfCountsAndResponseCode() {
+		EmployeePayrollData[] empData = getEmployee();
+		EmployeePayrollService employeePayrollService = new EmployeePayrollService(Arrays.asList(empData));
+		EmployeePayrollData[] empArr = new EmployeePayrollData[] {
+				new EmployeePayrollData("Capgemini", "Rinki", 1500000, LocalDate.now(), 'M',
+						Arrays.asList(new Integer[] { 2 })),
+				new EmployeePayrollData("Capgemini", "Alok", 5000000, LocalDate.now(), 'M',
+						Arrays.asList(new Integer[] { 3 })),
+				new EmployeePayrollData("Capgemini", "Fatima", 5300000, LocalDate.now(), 'F',
+						Arrays.asList(new Integer[] { 1, 4 })),
+				new EmployeePayrollData("Capgemini", "Raja", 5800000, LocalDate.now(), 'F',
+						Arrays.asList(new Integer[] { 4 })) };
+		boolean result = addMultipleEmployeeToJsonServer(Arrays.asList(empArr),
+				employeePayrollService.employeePayrollList);
+		Assert.assertEquals(true, result);
+		System.out.println(employeePayrollService.employeePayrollList);
+		long count = employeePayrollService.countEntries(IOService.CONSOLE_IO);
+		Assert.assertEquals(9, count);
 	}
 
 }
